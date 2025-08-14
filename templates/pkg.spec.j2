@@ -19,7 +19,7 @@ Summary:        {{ description }}
 
 License:        {{ license }}
 URL:            {{ repository }}
-Source0:        {{ repository }}/archive/refs/tags/{{ version }}.tar.gz
+Source0:        {{ repository }}/archive/refs/tags/{{ version }}.tar.gz#/{{ package_name }}-{{ version }}.tar.gz
 
 {% if patches -%}
 {% for patch in patches -%}
@@ -95,44 +95,12 @@ developing applications that use %{name}.
 {% endif -%}
 
 %build
-{% if ros_distro -%}
-# Setup ROS environment
-export ROS_DISTRO={{ distro }}
-export AMENT_PREFIX_PATH=/opt/ros/{{ distro }}
-export CMAKE_PREFIX_PATH=/opt/ros/{{ distro }}
-
-# Source ROS setup if available
-if [ -f /opt/ros/{{ distro }}/setup.bash ]; then
-    source /opt/ros/{{ distro }}/setup.bash
-fi
-{% endif -%}
-
-{% if qt_package -%}
-# Qt package setup
-export QT_SELECT=5
-{% endif -%}
-
-{% if vendor_package -%}
-# Vendor package - may download external dependencies
-{% if enable_net -%}
-export FETCHCONTENT_FULLY_DISCONNECTED=OFF
-export FETCHCONTENT_TRY_FIND_PACKAGE_MODE=NEVER
-{% endif -%}
-{% endif -%}
-
-%cmake \
-{% for arg in cmake_args -%}
-    {{ arg }} \
-{% endfor -%}
-{% if not cmake_args -%}
-    -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-    -DBUILD_TESTING=OFF \
-    -DCMAKE_INSTALL_PREFIX=/opt/ros/{{ distro }}
-{% endif -%}
-
+cd {{ package_name }}
+%cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo
 %cmake_build
 
 %install
+cd {{ package_name }}
 %cmake_install
 
 {% if post_install_commands -%}

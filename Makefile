@@ -57,7 +57,7 @@ ifneq ($(MOCK_CONFIG),)
 PYTHON_ARGS += --mock-config $(MOCK_CONFIG)
 endif
 
-.PHONY: all clean setup fetch-repos generate-specs build-rpms install-deps help list-packages rebuild only-new enable-net build-order copr-build mock-build generate-specs-from-yaml dep-tree download-sources update-cfg clean-changelogs
+.PHONY: all clean setup fetch-repos generate-specs build-rpms install-deps help list-packages rebuild only-new enable-net build-order copr-build mock-build generate-specs-from-yaml dep-tree download-sources update-cfg clean-changelogs build-srpms-ordered
 
 all: setup generate-specs
 
@@ -80,7 +80,8 @@ help:
 	@echo "  download-sources - Download source tarballs for all packages"
 	@echo "  download-sources-ordered - Download sources in build order"
 	@echo "  build-srpms  - Build SRPMs from downloaded sources"
-	@echo "  copr-build   - Build packages in COPR"
+	@echo "  build-srpms-ordered - Build SRPMs in dependency order (downloads sources first)"
+	@echo "  copr-build   - Build packages in COPR (generates SRPMs in build order and submits)"
 	@echo "  mock-build   - Build packages using mock"
 	@echo "  clean        - Clean build artifacts"
 	@echo ""
@@ -324,23 +325,43 @@ copr-build-package: setup
 		exit 1; \
 	fi
 
-copr-build: generate-specs
-	@echo "Building packages in COPR..."
+copr-build: generate-specs build-order
+	@echo "Building packages in COPR with proper build order..."
 	@if [ -z "$(COPR_REPO)" ]; then \
 		echo "Error: COPR_REPO must be specified (e.g., COPR_REPO=user/repo)"; \
 		exit 1; \
 	fi
 	@echo "Target COPR repo: $(COPR_REPO)"
 	@echo "Target chroot: $(CHROOT)"
-	@for spec in $(SPECS_DIR)/*.spec; do \
-		if [ -f "$$spec" ]; then \
-			package_name=$$(basename "$$spec" .spec); \
-			echo "Building $$package_name in COPR..."; \
-			python3 -c "from build_rmf_fedora import RMFFedoraBuilder; \
-				b = RMFFedoraBuilder(copr_repo='$(COPR_REPO)', chroot='$(CHROOT)', verbose=True); \
-				b.copr_build_package('$${package_name#ros-$(DISTRO)-}'.replace('-', '_'))"; \
+	@echo "Step 1: Downloading sources in build order..."
+	python3 build_dependency_tree.py --cfg-dir cfg/$(DISTRO) --sources-dir $(SOURCES_DIR) download --build-order
+	@echo "Step 2: Building SRPMs in build order..."
+	@build_order=$$(python3 -c "import json; data=json.load(open('cfg/build_order.json')); print(' '.join(data['build_order']))"); \
+	for package in $$build_order; do \
+		spec_file="$(SPECS_GENERATED_DIR)/ros-$(DISTRO)-$$(echo $$package | tr '_' '-').spec"; \
+		if [ -f "$$spec_file" ]; then \
+			echo "Building SRPM for $$package..."; \
+			rpmbuild --define "_topdir $(PWD)/$(BUILD_DIR)" \
+				--define "_sourcedir $(PWD)/$(SOURCES_DIR)" \
+				--define "_srcrpmdir $(PWD)/$(SRPMS_DIR)" \
+				-bs "$$spec_file" || echo "Failed to build SRPM for $$package"; \
+		else \
+			echo "Warning: Spec file not found for $$package: $$spec_file"; \
 		fi \
 	done
+	@echo "Step 3: Submitting SRPMs to COPR in build order..."
+	@build_order=$$(python3 -c "import json; data=json.load(open('cfg/build_order.json')); print(' '.join(data['build_order']))"); \
+	for package in $$build_order; do \
+		srpm_file="$(SRPMS_DIR)/ros-$(DISTRO)-$$(echo $$package | tr '_' '-')-*.src.rpm"; \
+		if ls $$srpm_file 1> /dev/null 2>&1; then \
+			echo "Submitting $$package to COPR..."; \
+			copr-cli build $(COPR_REPO) $$srpm_file --chroot $(CHROOT) || echo "Failed to submit $$package to COPR"; \
+			sleep 10; \
+		else \
+			echo "Warning: SRPM not found for $$package"; \
+		fi \
+	done
+	@echo "COPR build submission completed!"
 
 mock-build: generate-specs
 	@echo "Building packages with mock..."
@@ -567,3 +588,63 @@ show-config:
 	@echo "SPECS_GENERATED_DIR:   $(SPECS_GENERATED_DIR)"
 	@echo ""
 	@echo "Python command: python3 build_rmf_fedora.py $(PYTHON_ARGS)" 
+
+# Build SRPMs in dependency order
+build-srpms-ordered: generate-specs build-order
+	@echo "Building SRPMs in dependency order..."
+	@echo "Step 1: Downloading sources in build order..."
+	python3 build_dependency_tree.py --cfg-dir cfg/$(DISTRO) --sources-dir $(SOURCES_DIR) download --build-order
+	@echo "Step 2: Building SRPMs in build order..."
+	@build_order=$$(python3 -c "import json; data=json.load(open('cfg/build_order.json')); print(' '.join(data['build_order']))"); \
+	for package in $$build_order; do \
+		spec_file="$(SPECS_GENERATED_DIR)/ros-$(DISTRO)-$$(echo $$package | tr '_' '-').spec"; \
+		if [ -f "$$spec_file" ]; then \
+			echo "Building SRPM for $$package..."; \
+			rpmbuild --define "_topdir $(shell pwd)/$(BUILD_DIR)" \
+				--define "_sourcedir $(shell pwd)/$(SOURCES_DIR)" \
+				--define "_srcrpmdir $(shell pwd)/$(SRPMS_DIR)" \
+				-bs "$$spec_file" || echo "Failed to build SRPM for $$package"; \
+		else \
+			echo "Warning: Spec file not found for $$package: $$spec_file"; \
+		fi \
+	done
+	@echo "SRPM build completed in dependency order. Check $(SRPMS_DIR)/ for packages."
+
+copr-build: build-srpms-ordered
+	@echo "Submitting SRPMs to COPR in build order..."
+	@if [ -z "$(COPR_REPO)" ]; then \
+		echo "Error: COPR_REPO must be specified (e.g., COPR_REPO=user/repo)"; \
+		exit 1; \
+	fi
+	@echo "Target COPR repo: $(COPR_REPO)"
+	@echo "Target chroot: $(CHROOT)"
+	@build_order=$$(python3 -c "import json; data=json.load(open('cfg/build_order.json')); print(' '.join(data['build_order']))"); \
+	for package in $$build_order; do \
+		srpm_file="$(SRPMS_DIR)/ros-$(DISTRO)-$$(echo $$package | tr '_' '-')-*.src.rpm"; \
+		if ls $$srpm_file 1> /dev/null 2>&1; then \
+			echo "Submitting $$package to COPR..."; \
+			build_output=$$(copr-cli build $(COPR_REPO) $$srpm_file --chroot $(CHROOT) 2>&1); \
+			echo "$$build_output"; \
+			build_id=$$(echo "$$build_output" | grep -oP 'Created builds: \K\d+' | head -n1); \
+			if [ -n "$$build_id" ]; then \
+				echo "Build ID: $$build_id for package: $$package"; \
+				copr-cli watch-build $$build_id || { \
+					echo "Build $$build_id failed for $$package"; \
+					log_url="https://download.copr.fedorainfracloud.org/results/$(COPR_REPO)/$(CHROOT)/0$$build_id-ros-$(DISTRO)-$$(echo $$package | tr '_' '-')/builder-live.log.gz"; \
+					echo "Build log URL: $$log_url"; \
+					echo "Analyzing build failure..."; \
+					python3 -c "from build_failure_analyzer import analyze_build_failure; analyze_build_failure('$$log_url', '$$package', '$(DISTRO)')" || echo "Log analysis failed"; \
+					echo "ERROR: Build failed for $$package - stopping due to dependency order"; \
+					exit 1; \
+				}; \
+			else \
+				echo "Failed to extract build ID for $$package"; \
+				exit 1; \
+			fi; \
+			sleep 10; \
+		else \
+			echo "Warning: SRPM not found for $$package"; \
+			exit 1; \
+		fi \
+	done
+	@echo "COPR build submission completed successfully!" 
