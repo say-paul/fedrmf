@@ -1,0 +1,23 @@
+package_name: rmf_simulation
+repository: https://github.com/open-rmf/rmf_simulation
+version: "2.3.0"
+release_tag: "2.3.0"
+
+build_depends:
+  - ament_cmake
+  - rmf_building_map_msgs
+  - rmf_ros2
+
+exec_depends:
+  - rmf_building_map_msgs
+  - rmf_ros2
+
+system_depends:
+  - cmake
+  - gcc-c++
+  - gazebo-devel
+  - sdformat-devel
+
+description: "Simulation tools for RMF"
+license: Apache-2.0
+build_priority: 5 

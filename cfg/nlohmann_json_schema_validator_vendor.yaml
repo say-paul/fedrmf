@@ -1,0 +1,20 @@
+package_name: nlohmann_json_schema_validator_vendor
+repository: https://github.com/open-rmf/nlohmann_json_schema_validator_vendor
+version: "2.3.0"
+release_tag: "2.3.0"
+
+build_depends:
+  - ament_cmake
+  - ament_cmake_vendor_package
+
+exec_depends: []
+
+system_depends:
+  - cmake
+  - gcc-c++
+  - json-devel
+
+description: "Vendor package for nlohmann JSON schema validator"
+license: Apache-2.0
+build_priority: 1
+vendor_package: true 

@@ -1,0 +1,31 @@
+package_name: rmf_demos
+repository: https://github.com/open-rmf/rmf_demos
+version: "2.3.1"
+release_tag: "2.3.1"
+
+build_depends:
+  - ament_cmake
+  - rmf_building_map_msgs
+  - rmf_traffic
+  - rmf_task
+  - rmf_ros2
+  - rmf_traffic_editor
+  - rmf_visualization
+  - rmf_simulation
+
+exec_depends:
+  - rmf_building_map_msgs
+  - rmf_traffic
+  - rmf_task
+  - rmf_ros2
+  - rmf_traffic_editor
+  - rmf_visualization
+  - rmf_simulation
+
+system_depends:
+  - cmake
+  - gcc-c++
+
+description: "Demonstrations and examples for RMF"
+license: Apache-2.0
+build_priority: 6 

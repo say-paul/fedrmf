@@ -1,0 +1,21 @@
+package_name: pybind11_json_vendor
+repository: https://github.com/open-rmf/pybind11_json_vendor
+version: "0.2.13"
+release_tag: "0.2.13"
+
+build_depends:
+  - ament_cmake
+  - ament_cmake_vendor_package
+
+exec_depends: []
+
+system_depends:
+  - cmake
+  - gcc-c++
+  - python3-devel
+  - pybind11-devel
+
+description: "Vendor package for pybind11_json"
+license: Apache-2.0
+build_priority: 1
+vendor_package: true 

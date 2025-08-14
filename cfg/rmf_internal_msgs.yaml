@@ -1,0 +1,23 @@
+package_name: rmf_internal_msgs
+repository: https://github.com/open-rmf/rmf_internal_msgs
+version: "0.3.0"
+release_tag: "0.3.0"
+
+build_depends:
+  - ament_cmake
+  - builtin_interfaces
+  - rmf_building_map_msgs
+  - rosidl_default_generators
+
+exec_depends:
+  - builtin_interfaces
+  - rmf_building_map_msgs
+  - rosidl_default_runtime
+
+system_depends:
+  - cmake
+  - gcc-c++
+
+description: "Internal messages for RMF packages"
+license: Apache-2.0
+build_priority: 2 

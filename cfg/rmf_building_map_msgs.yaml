@@ -1,0 +1,23 @@
+package_name: rmf_building_map_msgs
+repository: https://github.com/open-rmf/rmf_building_map_msgs
+version: "1.3.0"
+release_tag: "1.3.0"
+
+build_depends:
+  - ament_cmake
+  - builtin_interfaces
+  - geometry_msgs
+  - rosidl_default_generators
+
+exec_depends:
+  - builtin_interfaces
+  - geometry_msgs
+  - rosidl_default_runtime
+
+system_depends:
+  - cmake
+  - gcc-c++
+
+description: "Messages used to send building maps over ROS interfaces"
+license: Apache-2.0
+build_priority: 1 

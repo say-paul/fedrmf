@@ -1,0 +1,25 @@
+package_name: rmf_traffic_editor
+repository: https://github.com/open-rmf/rmf_traffic_editor
+version: "1.9.0"
+release_tag: "1.9.0"
+
+build_depends:
+  - ament_cmake
+  - rmf_building_map_msgs
+  - rmf_utils
+
+exec_depends:
+  - rmf_building_map_msgs
+  - rmf_utils
+
+system_depends:
+  - cmake
+  - gcc-c++
+  - qt5-qtbase-devel
+  - qt5-qtwidgets-devel
+  - yaml-cpp-devel
+
+description: "GUI tools for creating and editing RMF traffic maps"
+license: Apache-2.0
+build_priority: 3
+qt_package: true 

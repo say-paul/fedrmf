@@ -1,0 +1,20 @@
+package_name: rmf_battery
+repository: https://github.com/open-rmf/rmf_battery
+version: "0.3.0"
+release_tag: "0.3.0"
+
+build_depends:
+  - ament_cmake
+  - ament_cmake_catch2
+  - rmf_utils
+
+exec_depends:
+  - rmf_utils
+
+system_depends:
+  - cmake
+  - gcc-c++
+
+description: "Battery management utilities for Robotics Middleware Framework"
+license: Apache-2.0
+build_priority: 2 

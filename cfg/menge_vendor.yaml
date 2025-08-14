@@ -1,0 +1,20 @@
+package_name: menge_vendor
+repository: https://github.com/open-rmf/menge_vendor
+version: "1.1.0"
+release_tag: "master"
+
+build_depends:
+  - ament_cmake
+  - ament_cmake_vendor_package
+
+exec_depends: []
+
+system_depends:
+  - cmake
+  - gcc-c++
+  - git
+
+description: "Wrapper around Menge crowd simulation framework"
+license: Apache-2.0
+build_priority: 1
+vendor_package: true 

@@ -1,0 +1,30 @@
+package_name: rmf_ros2
+repository: https://github.com/open-rmf/rmf_ros2
+version: "2.6.0"
+release_tag: "2.6.0"
+
+build_depends:
+  - ament_cmake
+  - ament_cmake_catch2
+  - rmf_building_map_msgs
+  - rmf_internal_msgs
+  - rmf_battery
+  - rmf_utils
+  - rmf_traffic
+  - rmf_task
+
+exec_depends:
+  - rmf_building_map_msgs
+  - rmf_internal_msgs
+  - rmf_battery
+  - rmf_utils
+  - rmf_traffic
+  - rmf_task
+
+system_depends:
+  - cmake
+  - gcc-c++
+
+description: "ROS 2 interfaces and utilities for RMF"
+license: Apache-2.0
+build_priority: 4 

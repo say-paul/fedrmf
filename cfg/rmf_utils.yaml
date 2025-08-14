@@ -1,0 +1,21 @@
+package_name: rmf_utils
+repository: https://github.com/open-rmf/rmf_utils
+version: "1.6.0"
+release_tag: "1.6.0"
+
+build_depends:
+  - ament_cmake
+  - ament_cmake_catch2
+  - eigen3
+
+exec_depends:
+  - eigen3
+
+system_depends:
+  - cmake
+  - gcc-c++
+  - eigen3-devel
+
+description: "Simple C++ programming utilities used by Robotics Middleware Framework packages"
+license: Apache-2.0
+build_priority: 1 

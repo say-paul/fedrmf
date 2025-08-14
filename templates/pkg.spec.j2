@@ -1,0 +1,229 @@
+{#- Jinja2 template for RMF package spec files -#}
+{#- Similar to rosfed's pkg.spec.j2 template -#}
+%global ros_distro {{ distro }}
+%global pkg_name {{ package_name }}
+%global upstream_name {{ package_name.replace('_', '-') }}
+
+{% if vendor_package -%}
+%global vendor_package 1
+{% endif -%}
+
+{% if qt_package -%}
+%global qt_package 1
+{% endif -%}
+
+Name:           ros-{{ distro }}-{{ package_name.replace('_', '-') }}
+Version:        {{ version }}
+Release:        {{ release if release else 1 }}%{?dist}
+Summary:        {{ description }}
+
+License:        {{ license }}
+URL:            {{ repository }}
+Source0:        {{ repository }}/archive/refs/tags/{{ release_tag }}.tar.gz
+
+{% if patches -%}
+{% for patch in patches -%}
+Patch{{ loop.index0 }}:        {{ patch }}
+{% endfor -%}
+{% endif -%}
+
+# Build dependencies
+BuildRequires:  cmake
+BuildRequires:  gcc-c++
+BuildRequires:  pkgconfig
+
+{% if ros_distro -%}
+BuildRequires:  ros-{{ distro }}-ament-cmake
+{% endif -%}
+
+{% for dep in build_depends -%}
+BuildRequires:  {{ resolve_dependency(dep, distro) }}
+{% endfor -%}
+
+{% for dep in system_depends -%}
+BuildRequires:  {{ dep }}
+{% endfor -%}
+
+{% if additional_build_deps -%}
+{% for dep in additional_build_deps -%}
+BuildRequires:  {{ dep }}
+{% endfor -%}
+{% endif -%}
+
+# Runtime dependencies
+{% if ros_distro -%}
+Requires:       ros-{{ distro }}-rclcpp
+{% endif -%}
+
+{% for dep in exec_depends -%}
+Requires:       {{ resolve_dependency(dep, distro) }}
+{% endfor -%}
+
+{% if additional_runtime_deps -%}
+{% for dep in additional_runtime_deps -%}
+Requires:       {{ dep }}
+{% endfor -%}
+{% endif -%}
+
+{% if devel_package -%}
+
+%package        devel
+Summary:        Development files for %{name}
+Requires:       %{name}%{?_isa} = %{version}-%{release}
+
+%description devel
+The %{name}-devel package contains libraries and header files for
+developing applications that use %{name}.
+{% endif -%}
+
+%description
+{{ description }}
+
+{% if long_description -%}
+
+{{ long_description }}
+{% endif -%}
+
+%prep
+%autosetup -n {{ package_name }}-{{ release_tag }}{% if patches %} -p1{% endif %}
+
+{% if patches -%}
+# Apply patches
+{% for patch in patches -%}
+%patch -P{{ loop.index0 }} -p1
+{% endfor -%}
+{% endif -%}
+
+%build
+{% if ros_distro -%}
+# Setup ROS environment
+export ROS_DISTRO={{ distro }}
+export AMENT_PREFIX_PATH=/opt/ros/{{ distro }}
+export CMAKE_PREFIX_PATH=/opt/ros/{{ distro }}
+
+# Source ROS setup if available
+if [ -f /opt/ros/{{ distro }}/setup.bash ]; then
+    source /opt/ros/{{ distro }}/setup.bash
+fi
+{% endif -%}
+
+{% if qt_package -%}
+# Qt package setup
+export QT_SELECT=5
+{% endif -%}
+
+{% if vendor_package -%}
+# Vendor package - may download external dependencies
+{% if enable_net -%}
+export FETCHCONTENT_FULLY_DISCONNECTED=OFF
+export FETCHCONTENT_TRY_FIND_PACKAGE_MODE=NEVER
+{% endif -%}
+{% endif -%}
+
+%cmake \
+{% for arg in cmake_args -%}
+    {{ arg }} \
+{% endfor -%}
+{% if not cmake_args -%}
+    -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+    -DBUILD_TESTING=OFF \
+    -DCMAKE_INSTALL_PREFIX=/opt/ros/{{ distro }}
+{% endif -%}
+
+%cmake_build
+
+%install
+%cmake_install
+
+{% if post_install_commands -%}
+{% for cmd in post_install_commands -%}
+{{ cmd }}
+{% endfor -%}
+{% endif -%}
+
+{% if install_additional_files -%}
+{% for file_spec in install_additional_files -%}
+install -D -m {{ file_spec.mode | default('644') }} {{ file_spec.src }} %{buildroot}{{ file_spec.dest }}
+{% endfor -%}
+{% endif -%}
+
+%check
+{% if run_tests and not skip_tests -%}
+{% if ros_distro -%}
+export ROS_DISTRO={{ distro }}
+export AMENT_PREFIX_PATH=/opt/ros/{{ distro }}
+if [ -f /opt/ros/{{ distro }}/setup.bash ]; then
+    source /opt/ros/{{ distro }}/setup.bash
+fi
+{% endif -%}
+%ctest
+{% else -%}
+# Tests disabled
+{% endif -%}
+
+{% if pre_install_script -%}
+
+%pre
+{{ pre_install_script }}
+{% endif -%}
+
+{% if post_install_script -%}
+
+%post
+{{ post_install_script }}
+{% if ldconfig_needed -%}
+/sbin/ldconfig
+{% endif -%}
+{% endif -%}
+
+{% if preun_script -%}
+
+%preun
+{{ preun_script }}
+{% endif -%}
+
+{% if postun_script -%}
+
+%postun
+{{ postun_script }}
+{% if ldconfig_needed -%}
+/sbin/ldconfig
+{% endif -%}
+{% endif -%}
+
+%files
+{% if custom_files -%}
+{% for file_pattern in custom_files -%}
+{{ file_pattern }}
+{% endfor -%}
+{% else -%}
+/opt/ros/{{ distro }}/*
+{% endif -%}
+
+{% if exclude_files -%}
+{% for exclude_pattern in exclude_files -%}
+%exclude {{ exclude_pattern }}
+{% endfor -%}
+{% endif -%}
+
+{% if devel_package -%}
+
+%files devel
+{% for file_pattern in devel_files -%}
+{{ file_pattern }}
+{% endfor -%}
+{% endif -%}
+
+%changelog
+{% if changelog -%}
+{% for entry in changelog -%}
+* {{ entry.date }} {{ entry.author }} <{{ entry.email }}> - {{ entry.version }}-{{ entry.release }}
+{% for change in entry.changes -%}
+- {{ change }}
+{% endfor -%}
+
+{% endfor -%}
+{% else -%}
+* {{ build_date }} RMF Fedora Builder <builder@fedoraproject.org> - {{ version }}-{{ release }}
+- Automated build of {{ package_name }} for ROS {{ distro }}
+{% endif %} 

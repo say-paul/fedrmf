@@ -1,0 +1,23 @@
+package_name: rmf_visualization
+repository: https://github.com/open-rmf/rmf_visualization
+version: "2.3.0"
+release_tag: "2.3.0"
+
+build_depends:
+  - ament_cmake
+  - rmf_building_map_msgs
+  - rmf_traffic
+  - rmf_visualization_msgs
+
+exec_depends:
+  - rmf_building_map_msgs
+  - rmf_traffic
+  - rmf_visualization_msgs
+
+system_depends:
+  - cmake
+  - gcc-c++
+
+description: "Visualization tools for RMF"
+license: Apache-2.0
+build_priority: 4 

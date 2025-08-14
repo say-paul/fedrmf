@@ -1,0 +1,30 @@
+# Dependency configuration for rmf_traffic
+package_name: rmf_traffic
+repository: https://github.com/open-rmf/rmf_traffic
+version: "3.3.1"
+release_tag: "3.3.1"
+
+build_depends:
+  - ament_cmake
+  - ament_cmake_catch2
+  - rmf_utils
+  - eigen3
+  - yaml-cpp
+
+exec_depends:
+  - rmf_utils
+  - eigen3
+  - yaml-cpp
+
+system_depends:
+  - cmake
+  - gcc-c++
+  - eigen3-devel
+  - yaml-cpp-devel
+
+description: "Package for managing traffic in the Robotics Middleware Framework"
+license: Apache-2.0
+build_priority: 2
+
+patches:
+  - rmf_traffic-fedora-cmake.patch 
