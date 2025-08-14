@@ -106,28 +106,22 @@ class RMFDependencyManager:
             print(f"Error: Cannot determine build order - {e}")
             return []
     
-    def save_build_order(self, build_order, filename='build_order.json'):
+    def save_build_order(self, build_order, filename='cfg/build_order.json'):
         """Save build order to JSON file"""
-        build_order_file = self.build_dir / filename
-        
         build_data = {
             'build_order': build_order,
             'packages': {},
             'dependency_info': {
                 'total_packages': len(build_order),
-                'has_cycles': not self.check_circular_dependencies()
+                'has_cycles': False
             }
         }
         
-        # Add package metadata
-        for pkg in build_order:
-            if pkg in self.packages:
-                config = self.packages[pkg]
-                build_data['packages'][pkg] = {
-                    'version': config.get('version', '0.0.0'),
-                    'release': config.get('release', 1),
-                    'release_tag': config.get('release_tag', ''),
-                    'source_url': config.get('source_url', ''),
+        # Add package information
+        for pkg_name in build_order:
+            if pkg_name in self.packages:
+                config = self.packages[pkg_name]
+                build_data['packages'][pkg_name] = {
                     'build_priority': config.get('build_priority', 999),
                     'build_depends': config.get('build_depends', []),
                     'exec_depends': config.get('exec_depends', []),
@@ -135,14 +129,19 @@ class RMFDependencyManager:
                     'vendor_package': config.get('vendor_package', False)
                 }
         
+        # Ensure directory exists
+        filepath = Path(filename)
+        filepath.parent.mkdir(parents=True, exist_ok=True)
+        
         try:
-            with open(build_order_file, 'w') as f:
+            with open(filepath, 'w') as f:
                 json.dump(build_data, f, indent=2)
-            print(f"Build order saved to: {build_order_file}")
-            return True
+            print(f"Build order saved to: {filepath}")
         except Exception as e:
             print(f"Error saving build order: {e}")
             return False
+        
+        return True
     
     def load_build_order(self, filename='build_order.json'):
         """Load build order from JSON file"""
@@ -169,18 +168,17 @@ class RMFDependencyManager:
         
         config = self.packages[package_name]
         repository = config.get('repository', '')
-        release_tag = config.get('release_tag', '')
         version = config.get('version', '0.0.0')
         
-        if not repository or not release_tag:
-            print(f"  Missing repository or release_tag for {package_name}")
+        if not repository or not version:
+            print(f"  Missing repository or version for {package_name}")
             return False
         
-        # Construct source URL from repository + release_tag
-        source_url = f"{repository}/archive/refs/tags/{release_tag}.tar.gz"
+        # Construct source URL from repository + version
+        source_url = f"{repository}/archive/refs/tags/{version}.tar.gz"
         
         # Determine filename based on what the tarball will extract to
-        filename = f"{package_name}-{release_tag}.tar.gz"
+        filename = f"{package_name}-{version}.tar.gz"
         target_file = self.sources_dir / filename
         
         # Check if file already exists

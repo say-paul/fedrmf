@@ -1,25 +1,22 @@
 package_name: rmf_traffic_editor
-repository: https://github.com/open-rmf/rmf_traffic_editor
-version: "1.9.0"
-release_tag: "1.9.0"
-
 build_depends:
-  - ament_cmake
-  - rmf_building_map_msgs
-  - rmf_utils
-
-exec_depends:
-  - rmf_building_map_msgs
-  - rmf_utils
-
+- ament_cmake
+- rmf_building_map_msgs
+- rmf_utils
+exec_depends: []
 system_depends:
-  - cmake
-  - gcc-c++
-  - qt5-qtbase-devel
-  - qt5-qtwidgets-devel
-  - yaml-cpp-devel
-
-description: "GUI tools for creating and editing RMF traffic maps"
+- cmake
+- gcc-c++
+- qt5-qtbase-devel
+- qt5-qtsvg-devel
+- qt5-qtopengl-devel
+- opencv-devel
+description: 'RMF package: rmf_traffic_editor'
 license: Apache-2.0
 build_priority: 3
-qt_package: true 
+repository: https://github.com/open-rmf/rmf_traffic_editor
+version: 1.9.1
+release: 1
+changelog:
+- entry: '* Thu Aug 14 2025 Sayan Paul <paul.sayan@gmail.com> - jazzy.1.9.1-1'
+  message: '- Updated from distro/jazzy.repo'

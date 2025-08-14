@@ -57,9 +57,9 @@ ifneq ($(MOCK_CONFIG),)
 PYTHON_ARGS += --mock-config $(MOCK_CONFIG)
 endif
 
-.PHONY: all clean setup fetch-repos generate-specs build-rpms install-deps help list-packages rebuild only-new enable-net build-order copr-build mock-build generate-specs-from-yaml dep-tree download-sources
+.PHONY: all clean setup fetch-repos generate-specs build-rpms install-deps help list-packages rebuild only-new enable-net build-order copr-build mock-build generate-specs-from-yaml dep-tree download-sources update-cfg clean-changelogs
 
-all: setup fetch-repos generate-specs
+all: setup generate-specs
 
 help:
 	@echo "Open-RMF Fedora Builder (rosfed-style)"
@@ -68,13 +68,12 @@ help:
 	@echo "Targets:"
 	@echo "  setup        - Create build directories"
 	@echo "  fetch-repos  - Download rmf.repos file"
-	@echo "  generate-specs - Generate RPM spec files (original method)"
-	@echo "  generate-specs-from-yaml - Generate specs from cfg/*.yaml using templates"
+	@echo "  update-cfg   - Update cfg/<distro>/ from distro/<distro>.repo file"
+	@echo "  generate-specs - Generate specs from cfg/<distro>/*.yaml using templates"
+	@echo "  clean-changelogs - Clean all changelogs and reset versions to blank"
 	@echo "  build-rpms   - Build all RPM packages"
-	@echo "  build-rpms-from-yaml - Build RPMs from generated specs"
 	@echo "  install-deps - Install build dependencies"
-	@echo "  list-packages - List generated packages"
-	@echo "  list-yaml-packages - List packages from YAML configs"
+	@echo "  list-packages - List available packages"
 	@echo "  list-existing - List existing packages"
 	@echo "  build-order  - Create dependency-based build order"
 	@echo "  dep-tree     - Show dependency tree and build order"
@@ -82,7 +81,6 @@ help:
 	@echo "  download-sources-ordered - Download sources in build order"
 	@echo "  build-srpms  - Build SRPMs from downloaded sources"
 	@echo "  copr-build   - Build packages in COPR"
-	@echo "  copr-build-from-yaml - Build COPR packages from YAML configs"
 	@echo "  mock-build   - Build packages using mock"
 	@echo "  clean        - Clean build artifacts"
 	@echo ""
@@ -119,16 +117,26 @@ fetch-repos: setup
 	wget -O $(BUILD_DIR)/rmf.repos $(RMF_REPOS_URL)
 	@echo "rmf.repos downloaded."
 
-# Original spec generation method
-generate-specs: fetch-repos
-	@echo "Generating spec files with options: $(PYTHON_ARGS)"
-	python3 build_rmf_fedora.py $(PYTHON_ARGS)
-	@echo "Spec files generated in $(SPECS_DIR)/"
+# Clean changelogs and reset versions
+clean-changelogs:
+	@echo "Cleaning all changelogs and resetting versions to blank..."
+	python3 generate_specs.py --distro $(DISTRO) --clean-changelogs
+	@echo "Changelogs cleaned. Run 'make update-cfg' to repopulate from distro file."
 
-# New YAML-based spec generation
-generate-specs-from-yaml: setup
-	@echo "Generating spec files from YAML configurations..."
-	python3 generate_specs.py --distro $(DISTRO) --cfg-dir $(CFG_DIR) --template-dir $(TEMPLATES_DIR) --output-dir $(SPECS_GENERATED_DIR) --patches-dir $(PATCHES_DIR)
+# Original spec generation method
+update-cfg:
+	@echo "Updating cfg/$(DISTRO)/ from distro/$(DISTRO).repo..."
+	@if [ ! -f distro/$(DISTRO).repo ]; then \
+		echo "Error: distro/$(DISTRO).repo not found. Please create it manually."; \
+		echo "This file should contain the package definitions in repos format."; \
+		exit 1; \
+	fi
+	python3 generate_specs.py --distro $(DISTRO) --update-cfg --repos-file distro/$(DISTRO).repo --commit-msg "Updated from distro/$(DISTRO).repo"
+	@echo "Configuration files updated."
+
+generate-specs: update-cfg
+	@echo "Generating spec files from cfg/$(DISTRO)/ configurations..."
+	python3 generate_specs.py --distro $(DISTRO) --cfg-dir cfg --template-dir $(TEMPLATES_DIR) --output-dir $(SPECS_GENERATED_DIR) --patches-dir $(PATCHES_DIR)
 	@echo "Spec files generated in $(SPECS_GENERATED_DIR)/"
 
 # Generate spec for single package
@@ -138,11 +146,11 @@ generate-spec-package:
 		exit 1; \
 	fi
 	@echo "Generating spec for package $(PACKAGE)..."
-	python3 generate_specs.py --distro $(DISTRO) --cfg-dir $(CFG_DIR) --template-dir $(TEMPLATES_DIR) --output-dir $(SPECS_GENERATED_DIR) --patches-dir $(PATCHES_DIR) --package $(PACKAGE)
+	python3 generate_specs.py --distro $(DISTRO) --cfg-dir cfg --template-dir $(TEMPLATES_DIR) --output-dir $(SPECS_GENERATED_DIR) --patches-dir $(PATCHES_DIR) --package $(PACKAGE)
 
-list-yaml-packages:
-	@echo "Listing packages from YAML configurations..."
-	python3 generate_specs.py --list-packages --cfg-dir $(CFG_DIR)
+list-packages:
+	@echo "Listing packages from cfg configuration..."
+	python3 generate_specs.py --distro $(DISTRO) --list-packages
 
 # Dependency tree and build order management
 dep-tree: 
@@ -220,10 +228,10 @@ build-srpm-package: setup
 		exit 1; \
 	fi
 
-build-order: fetch-repos
+build-order:
 	@echo "Creating dependency-based build order..."
-	python3 build_rmf_fedora.py --build-order-only $(DISTRO)
-	@echo "Build order created and saved to $(BUILD_DIR)/build_order.json"
+	python3 build_dependency_tree.py --cfg-dir cfg/$(DISTRO) build-order --save
+	@echo "Build order created and saved to cfg/build_order.json"
 
 load-build-order:
 	@echo "Loading existing build order..."

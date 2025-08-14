@@ -1,20 +1,16 @@
 package_name: nlohmann_json_schema_validator_vendor
-repository: https://github.com/open-rmf/nlohmann_json_schema_validator_vendor
-version: "2.3.0"
-release_tag: "2.3.0"
-
 build_depends:
-  - ament_cmake
-  - ament_cmake_vendor_package
-
+- ament_cmake
 exec_depends: []
-
 system_depends:
-  - cmake
-  - gcc-c++
-  - json-devel
-
-description: "Vendor package for nlohmann JSON schema validator"
+- cmake
+- gcc-c++
+description: 'RMF package: nlohmann_json_schema_validator_vendor'
 license: Apache-2.0
 build_priority: 1
-vendor_package: true 
+repository: https://github.com/open-rmf/nlohmann_json_schema_validator_vendor
+version: 0.4.1
+release: 1
+changelog:
+- entry: '* Thu Aug 14 2025 Sayan Paul <paul.sayan@gmail.com> - jazzy.0.4.1-1'
+  message: '- Updated from distro/jazzy.repo'

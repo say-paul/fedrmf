@@ -1,0 +1,276 @@
+{
+  "build_order": [
+    "ament_cmake_catch2",
+    "rmf_utils",
+    "rmf_api_msgs",
+    "rmf_building_map_msgs",
+    "rmf_visualization_msgs",
+    "menge_vendor",
+    "nlohmann_json_schema_validator_vendor",
+    "pybind11_json_vendor",
+    "rmf_traffic",
+    "rmf_battery",
+    "rmf_internal_msgs",
+    "rmf_traffic_editor",
+    "rmf_visualization",
+    "rmf_task",
+    "rmf_ros2",
+    "rmf_simulation",
+    "rmf_demos"
+  ],
+  "packages": {
+    "ament_cmake_catch2": {
+      "version": "1.4.1",
+      "release": 1,
+      "release_tag": "",
+      "source_url": "",
+      "build_priority": 1,
+      "build_depends": [
+        "ament_cmake"
+      ],
+      "exec_depends": [],
+      "enable_net": false,
+      "vendor_package": false
+    },
+    "rmf_utils": {
+      "version": "1.6.2",
+      "release": 1,
+      "release_tag": "",
+      "source_url": "",
+      "build_priority": 1,
+      "build_depends": [
+        "ament_cmake"
+      ],
+      "exec_depends": [],
+      "enable_net": false,
+      "vendor_package": false
+    },
+    "rmf_api_msgs": {
+      "version": "0.3.1",
+      "release": 1,
+      "release_tag": "",
+      "source_url": "",
+      "build_priority": 1,
+      "build_depends": [
+        "ament_cmake"
+      ],
+      "exec_depends": [],
+      "enable_net": false,
+      "vendor_package": false
+    },
+    "rmf_building_map_msgs": {
+      "version": "1.4.1",
+      "release": 1,
+      "release_tag": "",
+      "source_url": "",
+      "build_priority": 1,
+      "build_depends": [
+        "ament_cmake"
+      ],
+      "exec_depends": [],
+      "enable_net": false,
+      "vendor_package": false
+    },
+    "rmf_visualization_msgs": {
+      "version": "1.4.1",
+      "release": 1,
+      "release_tag": "",
+      "source_url": "",
+      "build_priority": 1,
+      "build_depends": [
+        "ament_cmake"
+      ],
+      "exec_depends": [],
+      "enable_net": false,
+      "vendor_package": false
+    },
+    "menge_vendor": {
+      "version": "1.2.1",
+      "release": 1,
+      "release_tag": "",
+      "source_url": "",
+      "build_priority": 1,
+      "build_depends": [
+        "ament_cmake"
+      ],
+      "exec_depends": [],
+      "enable_net": false,
+      "vendor_package": false
+    },
+    "nlohmann_json_schema_validator_vendor": {
+      "version": "0.4.1",
+      "release": 1,
+      "release_tag": "",
+      "source_url": "",
+      "build_priority": 1,
+      "build_depends": [
+        "ament_cmake"
+      ],
+      "exec_depends": [],
+      "enable_net": false,
+      "vendor_package": false
+    },
+    "pybind11_json_vendor": {
+      "version": "0.4.2",
+      "release": 1,
+      "release_tag": "",
+      "source_url": "",
+      "build_priority": 1,
+      "build_depends": [
+        "ament_cmake"
+      ],
+      "exec_depends": [],
+      "enable_net": false,
+      "vendor_package": false
+    },
+    "rmf_traffic": {
+      "version": "3.3.3",
+      "release": 1,
+      "release_tag": "",
+      "source_url": "",
+      "build_priority": 2,
+      "build_depends": [
+        "ament_cmake",
+        "rmf_utils"
+      ],
+      "exec_depends": [],
+      "enable_net": false,
+      "vendor_package": false
+    },
+    "rmf_battery": {
+      "version": "0.3.1",
+      "release": 1,
+      "release_tag": "",
+      "source_url": "",
+      "build_priority": 2,
+      "build_depends": [
+        "ament_cmake",
+        "rmf_utils"
+      ],
+      "exec_depends": [],
+      "enable_net": false,
+      "vendor_package": false
+    },
+    "rmf_internal_msgs": {
+      "version": "3.3.1",
+      "release": 1,
+      "release_tag": "",
+      "source_url": "",
+      "build_priority": 2,
+      "build_depends": [
+        "ament_cmake",
+        "rmf_building_map_msgs"
+      ],
+      "exec_depends": [],
+      "enable_net": false,
+      "vendor_package": false
+    },
+    "rmf_traffic_editor": {
+      "version": "1.9.1",
+      "release": 1,
+      "release_tag": "",
+      "source_url": "",
+      "build_priority": 3,
+      "build_depends": [
+        "ament_cmake",
+        "rmf_building_map_msgs",
+        "rmf_utils"
+      ],
+      "exec_depends": [],
+      "enable_net": false,
+      "vendor_package": false
+    },
+    "rmf_visualization": {
+      "version": "2.3.2",
+      "release": 1,
+      "release_tag": "",
+      "source_url": "",
+      "build_priority": 4,
+      "build_depends": [
+        "ament_cmake",
+        "rmf_building_map_msgs",
+        "rmf_visualization_msgs",
+        "rmf_traffic"
+      ],
+      "exec_depends": [],
+      "enable_net": false,
+      "vendor_package": false
+    },
+    "rmf_task": {
+      "version": "2.5.1",
+      "release": 1,
+      "release_tag": "",
+      "source_url": "",
+      "build_priority": 3,
+      "build_depends": [
+        "ament_cmake",
+        "rmf_utils",
+        "rmf_traffic",
+        "rmf_battery",
+        "nlohmann_json_schema_validator_vendor"
+      ],
+      "exec_depends": [],
+      "enable_net": false,
+      "vendor_package": false
+    },
+    "rmf_ros2": {
+      "version": "2.7.2",
+      "release": 1,
+      "release_tag": "",
+      "source_url": "",
+      "build_priority": 4,
+      "build_depends": [
+        "ament_cmake",
+        "rmf_utils",
+        "rmf_traffic",
+        "rmf_task",
+        "rmf_battery",
+        "rmf_building_map_msgs",
+        "rmf_internal_msgs"
+      ],
+      "exec_depends": [],
+      "enable_net": false,
+      "vendor_package": false
+    },
+    "rmf_simulation": {
+      "version": "2.3.2",
+      "release": 1,
+      "release_tag": "",
+      "source_url": "",
+      "build_priority": 5,
+      "build_depends": [
+        "ament_cmake",
+        "rmf_building_map_msgs",
+        "rmf_ros2"
+      ],
+      "exec_depends": [],
+      "enable_net": false,
+      "vendor_package": false
+    },
+    "rmf_demos": {
+      "version": "2.3.0",
+      "release": 1,
+      "release_tag": "",
+      "source_url": "",
+      "build_priority": 6,
+      "build_depends": [
+        "ament_cmake",
+        "rmf_utils",
+        "rmf_traffic",
+        "rmf_task",
+        "rmf_battery",
+        "rmf_ros2",
+        "rmf_simulation",
+        "rmf_visualization",
+        "rmf_traffic_editor"
+      ],
+      "exec_depends": [],
+      "enable_net": false,
+      "vendor_package": false
+    }
+  },
+  "dependency_info": {
+    "total_packages": 17,
+    "has_cycles": false
+  }
+}

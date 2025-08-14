@@ -1,19 +1,16 @@
 package_name: ament_cmake_catch2
-repository: https://github.com/open-rmf/ament_cmake_catch2
-version: "1.2.1"
-release_tag: "jazzy"
-
 build_depends:
-  - ament_cmake_core
-  - ament_cmake_test
-
-exec_depends:
-  - ament_cmake_test
-
+- ament_cmake
+exec_depends: []
 system_depends:
-  - cmake
-  - gcc-c++
-
-description: "Allows integrating catch2 tests in the ament buildsystem with CMake"
+- cmake
+- gcc-c++
+description: 'RMF package: ament_cmake_catch2'
 license: Apache-2.0
-build_priority: 1 
+build_priority: 1
+repository: https://github.com/open-rmf/ament_cmake_catch2
+version: 1.4.1
+release: 1
+changelog:
+- entry: '* Thu Aug 14 2025 Sayan Paul <paul.sayan@gmail.com> - jazzy.1.4.1-1'
+  message: '- Updated from distro/jazzy.repo'

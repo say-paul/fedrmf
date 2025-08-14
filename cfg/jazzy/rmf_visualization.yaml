@@ -1,23 +1,22 @@
 package_name: rmf_visualization
-repository: https://github.com/open-rmf/rmf_visualization
-version: "2.3.0"
-release_tag: "2.3.0"
-
 build_depends:
-  - ament_cmake
-  - rmf_building_map_msgs
-  - rmf_traffic
-  - rmf_visualization_msgs
-
-exec_depends:
-  - rmf_building_map_msgs
-  - rmf_traffic
-  - rmf_visualization_msgs
-
+- ament_cmake
+- rmf_building_map_msgs
+- rmf_visualization_msgs
+- rmf_traffic
+exec_depends: []
 system_depends:
-  - cmake
-  - gcc-c++
-
-description: "Visualization tools for RMF"
+- cmake
+- gcc-c++
+- qt5-qtbase-devel
+- qt5-qtwidgets-devel
+- qt5-qtsvg-devel
+description: 'RMF package: rmf_visualization'
 license: Apache-2.0
-build_priority: 4 
+build_priority: 4
+repository: https://github.com/open-rmf/rmf_visualization
+version: 2.3.2
+release: 1
+changelog:
+- entry: '* Thu Aug 14 2025 Sayan Paul <paul.sayan@gmail.com> - jazzy.2.3.2-1'
+  message: '- Updated from distro/jazzy.repo'

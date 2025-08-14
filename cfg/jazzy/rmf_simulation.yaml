@@ -1,23 +1,20 @@
 package_name: rmf_simulation
-repository: https://github.com/open-rmf/rmf_simulation
-version: "2.3.0"
-release_tag: "2.3.0"
-
 build_depends:
-  - ament_cmake
-  - rmf_building_map_msgs
-  - rmf_ros2
-
-exec_depends:
-  - rmf_building_map_msgs
-  - rmf_ros2
-
+- ament_cmake
+- rmf_building_map_msgs
+- rmf_ros2
+exec_depends: []
 system_depends:
-  - cmake
-  - gcc-c++
-  - gazebo-devel
-  - sdformat-devel
-
-description: "Simulation tools for RMF"
+- cmake
+- gcc-c++
+- gazebo-devel
+- sdformat-devel
+description: 'RMF package: rmf_simulation'
 license: Apache-2.0
-build_priority: 5 
+build_priority: 5
+repository: https://github.com/open-rmf/rmf_simulation
+version: 2.3.2
+release: 1
+changelog:
+- entry: '* Thu Aug 14 2025 Sayan Paul <paul.sayan@gmail.com> - jazzy.2.3.2-1'
+  message: '- Updated from distro/jazzy.repo'

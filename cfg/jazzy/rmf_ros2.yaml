@@ -1,30 +1,22 @@
 package_name: rmf_ros2
-repository: https://github.com/open-rmf/rmf_ros2
-version: "2.6.0"
-release_tag: "2.6.0"
-
 build_depends:
-  - ament_cmake
-  - ament_cmake_catch2
-  - rmf_building_map_msgs
-  - rmf_internal_msgs
-  - rmf_battery
-  - rmf_utils
-  - rmf_traffic
-  - rmf_task
-
-exec_depends:
-  - rmf_building_map_msgs
-  - rmf_internal_msgs
-  - rmf_battery
-  - rmf_utils
-  - rmf_traffic
-  - rmf_task
-
+- ament_cmake
+- rmf_utils
+- rmf_traffic
+- rmf_task
+- rmf_battery
+- rmf_building_map_msgs
+- rmf_internal_msgs
+exec_depends: []
 system_depends:
-  - cmake
-  - gcc-c++
-
-description: "ROS 2 interfaces and utilities for RMF"
+- cmake
+- gcc-c++
+description: 'RMF package: rmf_ros2'
 license: Apache-2.0
-build_priority: 4 
+build_priority: 4
+repository: https://github.com/open-rmf/rmf_ros2
+version: 2.7.2
+release: 1
+changelog:
+- entry: '* Thu Aug 14 2025 Sayan Paul <paul.sayan@gmail.com> - jazzy.2.7.2-1'
+  message: '- Updated from distro/jazzy.repo'

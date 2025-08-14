@@ -1,21 +1,16 @@
 package_name: rmf_utils
-repository: https://github.com/open-rmf/rmf_utils
-version: "1.6.0"
-release_tag: "1.6.0"
-
 build_depends:
-  - ament_cmake
-  - ament_cmake_catch2
-  - eigen3
-
-exec_depends:
-  - eigen3
-
+- ament_cmake
+exec_depends: []
 system_depends:
-  - cmake
-  - gcc-c++
-  - eigen3-devel
-
-description: "Simple C++ programming utilities used by Robotics Middleware Framework packages"
+- cmake
+- gcc-c++
+description: 'RMF package: rmf_utils'
 license: Apache-2.0
-build_priority: 1 
+build_priority: 1
+repository: https://github.com/open-rmf/rmf_utils
+version: 1.6.2
+release: 1
+changelog:
+- entry: '* Thu Aug 14 2025 Sayan Paul <paul.sayan@gmail.com> - jazzy.1.6.2-1'
+  message: '- Updated from distro/jazzy.repo'

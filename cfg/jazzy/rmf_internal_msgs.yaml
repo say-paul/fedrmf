@@ -1,23 +1,17 @@
 package_name: rmf_internal_msgs
-repository: https://github.com/open-rmf/rmf_internal_msgs
-version: "0.3.0"
-release_tag: "0.3.0"
-
 build_depends:
-  - ament_cmake
-  - builtin_interfaces
-  - rmf_building_map_msgs
-  - rosidl_default_generators
-
-exec_depends:
-  - builtin_interfaces
-  - rmf_building_map_msgs
-  - rosidl_default_runtime
-
+- ament_cmake
+- rmf_building_map_msgs
+exec_depends: []
 system_depends:
-  - cmake
-  - gcc-c++
-
-description: "Internal messages for RMF packages"
+- cmake
+- gcc-c++
+description: 'RMF package: rmf_internal_msgs'
 license: Apache-2.0
-build_priority: 2 
+build_priority: 2
+repository: https://github.com/open-rmf/rmf_internal_msgs
+version: 3.3.1
+release: 1
+changelog:
+- entry: '* Thu Aug 14 2025 Sayan Paul <paul.sayan@gmail.com> - jazzy.3.3.1-1'
+  message: '- Updated from distro/jazzy.repo'

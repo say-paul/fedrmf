@@ -1,31 +1,24 @@
 package_name: rmf_demos
-repository: https://github.com/open-rmf/rmf_demos
-version: "2.3.1"
-release_tag: "2.3.1"
-
 build_depends:
-  - ament_cmake
-  - rmf_building_map_msgs
-  - rmf_traffic
-  - rmf_task
-  - rmf_ros2
-  - rmf_traffic_editor
-  - rmf_visualization
-  - rmf_simulation
-
-exec_depends:
-  - rmf_building_map_msgs
-  - rmf_traffic
-  - rmf_task
-  - rmf_ros2
-  - rmf_traffic_editor
-  - rmf_visualization
-  - rmf_simulation
-
+- ament_cmake
+- rmf_utils
+- rmf_traffic
+- rmf_task
+- rmf_battery
+- rmf_ros2
+- rmf_simulation
+- rmf_visualization
+- rmf_traffic_editor
+exec_depends: []
 system_depends:
-  - cmake
-  - gcc-c++
-
-description: "Demonstrations and examples for RMF"
+- cmake
+- gcc-c++
+description: 'RMF package: rmf_demos'
 license: Apache-2.0
-build_priority: 6 
+build_priority: 6
+repository: https://github.com/open-rmf/rmf_demos
+version: 2.3.0
+release: 1
+changelog:
+- entry: '* Thu Aug 14 2025 Sayan Paul <paul.sayan@gmail.com> - jazzy.2.3.0-1'
+  message: '- Updated from distro/jazzy.repo'

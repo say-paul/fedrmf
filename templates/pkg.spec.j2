@@ -19,7 +19,7 @@ Summary:        {{ description }}
 
 License:        {{ license }}
 URL:            {{ repository }}
-Source0:        {{ repository }}/archive/refs/tags/{{ release_tag }}.tar.gz
+Source0:        {{ repository }}/archive/refs/tags/{{ version }}.tar.gz
 
 {% if patches -%}
 {% for patch in patches -%}
@@ -85,7 +85,7 @@ developing applications that use %{name}.
 {% endif -%}
 
 %prep
-%autosetup -n {{ package_name }}-{{ release_tag }}{% if patches %} -p1{% endif %}
+%autosetup -n {{ package_name }}-{{ version }}{% if patches %} -p1{% endif %}
 
 {% if patches -%}
 # Apply patches
@@ -217,13 +217,11 @@ fi
 %changelog
 {% if changelog -%}
 {% for entry in changelog -%}
-* {{ entry.date }} {{ entry.author }} <{{ entry.email }}> - {{ entry.version }}-{{ entry.release }}
-{% for change in entry.changes -%}
-- {{ change }}
-{% endfor -%}
+{{ entry.entry }}
+{{ entry.message }}
 
 {% endfor -%}
 {% else -%}
-* {{ build_date }} RMF Fedora Builder <builder@fedoraproject.org> - {{ version }}-{{ release }}
-- Automated build of {{ package_name }} for ROS {{ distro }}
+* {{ build_date }} Sayan Paul <paul.sayan@gmail.com> - {{ version }}-{{ release|default(1) }}
+- Initial build of {{ package_name }} for ROS {{ distro }}
 {% endif %} 

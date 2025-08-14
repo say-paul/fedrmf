@@ -1,23 +1,16 @@
 package_name: rmf_building_map_msgs
-repository: https://github.com/open-rmf/rmf_building_map_msgs
-version: "1.3.0"
-release_tag: "1.3.0"
-
 build_depends:
-  - ament_cmake
-  - builtin_interfaces
-  - geometry_msgs
-  - rosidl_default_generators
-
-exec_depends:
-  - builtin_interfaces
-  - geometry_msgs
-  - rosidl_default_runtime
-
+- ament_cmake
+exec_depends: []
 system_depends:
-  - cmake
-  - gcc-c++
-
-description: "Messages used to send building maps over ROS interfaces"
+- cmake
+- gcc-c++
+description: 'RMF package: rmf_building_map_msgs'
 license: Apache-2.0
-build_priority: 1 
+build_priority: 1
+repository: https://github.com/open-rmf/rmf_building_map_msgs
+version: 1.4.1
+release: 1
+changelog:
+- entry: '* Thu Aug 14 2025 Sayan Paul <paul.sayan@gmail.com> - jazzy.1.4.1-1'
+  message: '- Updated from distro/jazzy.repo'

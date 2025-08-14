@@ -1,30 +1,20 @@
 package_name: rmf_task
-repository: https://github.com/open-rmf/rmf_task
-version: "2.3.1"
-release_tag: "2.3.1"
-
 build_depends:
-  - ament_cmake
-  - ament_cmake_catch2
-  - rmf_utils
-  - rmf_traffic
-  - rmf_battery
-  - nlohmann_json_schema_validator_vendor
-
-exec_depends:
-  - rmf_utils
-  - rmf_traffic
-  - rmf_battery
-  - nlohmann_json_schema_validator_vendor
-
+- ament_cmake
+- rmf_utils
+- rmf_traffic
+- rmf_battery
+- nlohmann_json_schema_validator_vendor
+exec_depends: []
 system_depends:
-  - cmake
-  - gcc-c++
-  - json-devel
-
-description: "Package for managing tasks in the Robotics Middleware Framework"
+- cmake
+- gcc-c++
+description: 'RMF package: rmf_task'
 license: Apache-2.0
 build_priority: 3
-
-patches:
-  - rmf_task-gcc-compatibility.patch 
+repository: https://github.com/open-rmf/rmf_task
+version: 2.5.1
+release: 1
+changelog:
+- entry: '* Thu Aug 14 2025 Sayan Paul <paul.sayan@gmail.com> - jazzy.2.5.1-1'
+  message: '- Updated from distro/jazzy.repo'
