@@ -1,12 +1,14 @@
 package_name: nlohmann_json_schema_validator_vendor
-build_depends:
-- ament_cmake
+build_depends: []
 exec_depends: []
 system_depends:
 - cmake
 - gcc-c++
-description: 'RMF package: nlohmann_json_schema_validator_vendor'
-license: Apache-2.0
+- ros2-jazzy-ament_cmake-devel
+- git
+- json-devel
+description: A vendor package for JSON schema validator for JSON for Modern C++
+license: Apache License 2.0
 build_priority: 1
 repository: https://github.com/open-rmf/nlohmann_json_schema_validator_vendor
 version: 0.4.1
@@ -14,3 +16,18 @@ release: 1
 changelog:
 - entry: '* Thu Aug 14 2025 Sayan Paul <paul.sayan@gmail.com> - jazzy.0.4.1-1'
   message: '- Updated from distro/jazzy.repo'
+build_env:
+  PYTHONPATH: /usr/lib64/ros2-jazzy/lib/python3.13/site-packages
+cmake_args:
+- -S
+- .
+- -DCMAKE_PREFIX_PATH=/usr/lib64/ros2-jazzy
+custom_files:
+- /usr/bin/*
+- /usr/include/nlohmann/*
+- /usr/lib/libnlohmann_json_schema_validator.so*
+- /usr/lib/cmake/nlohmann_json_schema_validator/*
+- /usr/share/nlohmann_json_schema_validator_vendor/*
+- /usr/share/ament_index/resource_index/packages/nlohmann_json_schema_validator_vendor
+- /usr/share/ament_index/resource_index/parent_prefix_path/nlohmann_json_schema_validator_vendor
+- /usr/share/ament_index/resource_index/package_run_dependencies/nlohmann_json_schema_validator_vendor

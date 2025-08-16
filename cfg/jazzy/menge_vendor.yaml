@@ -1,12 +1,18 @@
 package_name: menge_vendor
 build_depends:
-- ament_cmake
-exec_depends: []
+- tinyxml-devel
+exec_depends:
+- tinyxml
 system_depends:
 - cmake
 - gcc-c++
-description: 'RMF package: menge_vendor'
-license: Apache-2.0
+- pkgconf
+- ros2-jazzy-ament_cmake-devel
+description: "Menge is a powerful, cross-platform, modular framework for crowd simulation\
+  \ developed at the University of North Carolina - Chapel Hill. This package includes\
+  \ the core simulation part of origin menge package, with a bit modification for\
+  \ crowd simulation in gazebo and ignition gazebo.\n  "
+license: Apache 2.0
 build_priority: 1
 repository: https://github.com/open-rmf/menge_vendor
 version: 1.2.1
@@ -14,3 +20,18 @@ release: 1
 changelog:
 - entry: '* Thu Aug 14 2025 Sayan Paul <paul.sayan@gmail.com> - jazzy.1.2.1-1'
   message: '- Updated from distro/jazzy.repo'
+build_env:
+  PYTHONPATH: /usr/lib64/ros2-jazzy/lib/python3.13/site-packages
+cmake_args:
+- -S
+- .
+- -DCMAKE_PREFIX_PATH=/usr/lib64/ros2-jazzy
+custom_files:
+- /usr/lib/libmenge_vendor.so
+- /usr/include/MengeCore/*
+- /usr/share/menge_vendor/*
+- /usr/include/macros.h
+- /usr/include/splinelib/*
+- /usr/share/ament_index/resource_index/package_run_dependencies/menge_vendor
+- /usr/share/ament_index/resource_index/packages/menge_vendor
+- /usr/share/ament_index/resource_index/parent_prefix_path/menge_vendor

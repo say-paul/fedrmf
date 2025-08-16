@@ -1,12 +1,15 @@
 package_name: ament_cmake_catch2
 build_depends:
-- ament_cmake
-exec_depends: []
+- ros-jazzy-ament-cmake-core
+- ros-jazzy-ament-cmake-test
+- ros-jazzy-ament-package
+exec_depends:
+- ros-jazzy-ament-cmake-test
 system_depends:
 - cmake
 - gcc-c++
-description: 'RMF package: ament_cmake_catch2'
-license: Apache-2.0
+description: Allows integrating catch2 tests in the ament buildsystem with CMake
+license: Apache License 2.0
 build_priority: 1
 repository: https://github.com/open-rmf/ament_cmake_catch2
 version: 1.4.1
@@ -14,3 +17,17 @@ release: 1
 changelog:
 - entry: '* Thu Aug 14 2025 Sayan Paul <paul.sayan@gmail.com> - jazzy.1.4.1-1'
   message: '- Updated from distro/jazzy.repo'
+- entry: '* Thu Aug 14 2025 Sayan Paul <paul.sayan@gmail.com> - jazzy.1.4.2-1'
+  message: '- Updated from distro/jazzy.repo'
+- entry: '* Thu Aug 14 2025 Sayan Paul <paul.sayan@gmail.com> - jazzy.1.4.1-1'
+  message: '- Updated from distro/jazzy.repo'
+cmake_args:
+- -DCMAKE_PREFIX_PATH=/usr/lib64/ros2-jazzy
+build_env:
+  PYTHONPATH: /usr/lib64/ros2-jazzy/lib/python3.13/site-packages
+custom_files:
+- '%{_datadir}/ament_cmake_catch2/'
+- '%{_datadir}/ament_index/resource_index/package_run_dependencies/ament_cmake_catch2'
+- '%{_datadir}/ament_index/resource_index/parent_prefix_path/ament_cmake_catch2'
+- '%{_datadir}/ament_index/resource_index/packages/ament_cmake_catch2'
+skip_debug: true

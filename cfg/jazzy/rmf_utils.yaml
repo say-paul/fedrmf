@@ -1,16 +1,30 @@
 package_name: rmf_utils
 build_depends:
-- ament_cmake
+- cmake
 exec_depends: []
 system_depends:
 - cmake
 - gcc-c++
-description: 'RMF package: rmf_utils'
-license: Apache-2.0
+- ros2-jazzy-ament_cmake-devel
+description: Simple C++ programming utilities used by Robotics Middleware Framework
+  packages
+license: Apache License 2.0
 build_priority: 1
 repository: https://github.com/open-rmf/rmf_utils
 version: 1.6.2
 release: 1
+build_type: cmake
+custom_files:
+- /usr/lib/librmf_utils.so
+- /usr/include/rmf_utils/*
+- /usr/lib64/rmf_utils/cmake/*
+- /usr/share/rmf_utils/*
+- /usr/share/ament_index/resource_index/packages/rmf_utils
 changelog:
 - entry: '* Thu Aug 14 2025 Sayan Paul <paul.sayan@gmail.com> - jazzy.1.6.2-1'
   message: '- Updated from distro/jazzy.repo'
+build_env:
+  PYTHONPATH: /usr/lib64/ros2-jazzy/lib/python3.13/site-packages
+cmake_args:
+- -DCMAKE_PREFIX_PATH=/usr/lib64/ros2-jazzy
+skip_debug: true

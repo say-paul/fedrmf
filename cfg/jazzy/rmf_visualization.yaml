@@ -1,18 +1,20 @@
 package_name: rmf_visualization
-build_depends:
-- ament_cmake
-- rmf_building_map_msgs
-- rmf_visualization_msgs
-- rmf_traffic
-exec_depends: []
+build_depends: []
+exec_depends:
+- rmf_visualization_schedule
+- rmf_visualization_fleet_states
+- rmf_visualization_building_systems
+- rmf_visualization_navgraphs
+- rmf_visualization_floorplans
+- rmf_visualization_obstacles
+- rmf_visualization_rviz2_plugins
+- launch_xml
 system_depends:
 - cmake
 - gcc-c++
-- qt5-qtbase-devel
-- qt5-qtwidgets-devel
-- qt5-qtsvg-devel
-description: 'RMF package: rmf_visualization'
-license: Apache-2.0
+- ros2-jazzy-ament_cmake-devel
+description: Package containing a single launch file to bringup various visualizations
+license: Apache License 2.0
 build_priority: 4
 repository: https://github.com/open-rmf/rmf_visualization
 version: 2.3.2
@@ -20,3 +22,13 @@ release: 1
 changelog:
 - entry: '* Thu Aug 14 2025 Sayan Paul <paul.sayan@gmail.com> - jazzy.2.3.2-1'
   message: '- Updated from distro/jazzy.repo'
+build_env:
+  PYTHONPATH: /usr/lib64/ros2-jazzy/lib/python3.13/site-packages
+cmake_args:
+- -DCMAKE_PREFIX_PATH=/usr/lib64/ros2-jazzy
+skip_debug: true
+custom_files:
+- /usr/share/rmf_visualization/*
+- /usr/share/ament_index/resource_index/packages/rmf_visualization
+- /usr/share/ament_index/resource_index/parent_prefix_path/rmf_visualization
+- /usr/share/ament_index/resource_index/package_run_dependencies/rmf_visualization

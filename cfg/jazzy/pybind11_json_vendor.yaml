@@ -1,12 +1,16 @@
 package_name: pybind11_json_vendor
-build_depends:
-- ament_cmake
+build_depends: []
 exec_depends: []
 system_depends:
 - cmake
 - gcc-c++
-description: 'RMF package: pybind11_json_vendor'
-license: Apache-2.0
+- ros2-jazzy-ament_cmake-devel
+- git
+- json-devel
+- ros2-jazzy-ament_cmake_vendor_package-devel
+- ros2-jazzy-pybind11_vendor-devel
+description: A vendor package for pybind11_json for Modern C++
+license: Apache License 2.0
 build_priority: 1
 repository: https://github.com/open-rmf/pybind11_json_vendor
 version: 0.4.2
@@ -14,3 +18,17 @@ release: 1
 changelog:
 - entry: '* Thu Aug 14 2025 Sayan Paul <paul.sayan@gmail.com> - jazzy.0.4.2-1'
   message: '- Updated from distro/jazzy.repo'
+build_env:
+  PYTHONPATH: /usr/lib64/ros2-jazzy/lib/python3.13/site-packages
+cmake_args:
+- -S
+- .
+- -DCMAKE_PREFIX_PATH=/usr/lib64/ros2-jazzy
+custom_files:
+- /usr/opt/pybind11_json_vendor/*
+- /usr/share/pybind11_json_vendor/*
+- /usr/share/ament_index/resource_index/vendor_packages/pybind11_json_vendor
+- /usr/share/ament_index/resource_index/package_run_dependencies/pybind11_json_vendor
+- /usr/share/ament_index/resource_index/packages/pybind11_json_vendor
+- /usr/share/ament_index/resource_index/parent_prefix_path/pybind11_json_vendor
+skip_debug: true
