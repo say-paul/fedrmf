@@ -1,15 +1,20 @@
 package_name: rmf_traffic
-build_depends:
-- ament_cmake
-- rmf_utils
+build_depends: []
 exec_depends: []
 system_depends:
 - cmake
 - gcc-c++
+- ros2-jazzy-ament_cmake-devel
+- ros-jazzy-rmf-utils
 - eigen3-devel
 - yaml-cpp-devel
-description: 'RMF package: rmf_traffic'
-license: Apache-2.0
+- libccd-devel
+- fcl-devel
+- boost-devel
+patches:
+- rmf_traffic-fedora-build.patch
+description: Package for managing traffic in the Robotics Middleware Framework
+license: Apache License 2.0
 build_priority: 2
 repository: https://github.com/open-rmf/rmf_traffic
 version: 3.3.3
@@ -17,3 +22,19 @@ release: 1
 changelog:
 - entry: '* Thu Aug 14 2025 Sayan Paul <paul.sayan@gmail.com> - jazzy.3.3.3-1'
   message: '- Updated from distro/jazzy.repo'
+build_env:
+  PYTHONPATH: /usr/lib64/ros2-jazzy/lib/python3.13/site-packages
+  AMENT_PREFIX_PATH: /usr/lib64/ros2-jazzy
+  CMAKE_PREFIX_PATH: /usr/lib64/ros2-jazzy
+  PKG_CONFIG_PATH: /usr/lib64/ros2-jazzy/lib/pkgconfig
+  LD_LIBRARY_PATH: /usr/lib64/ros2-jazzy/lib
+source_dir: "rmf_traffic"
+cmake_args:
+- -DCMAKE_PREFIX_PATH=/usr/lib64/ros2-jazzy
+skip_debug: true
+custom_files:
+- /usr/include/rmf_traffic/*
+- /usr/lib64/librmf_traffic.so
+- /usr/lib64/rmf_traffic/cmake/*
+- /usr/share/rmf_traffic/*
+- /usr/share/ament_index/resource_index/packages/rmf_traffic

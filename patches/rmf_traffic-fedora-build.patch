@@ -1,0 +1,10 @@
+--- rmf_traffic-3.3.3.orig/rmf_traffic/include/rmf_traffic/schedule/ParticipantDescription.hpp	2025-08-16 19:57:39.138898905 +0530
++++ rmf_traffic-3.3.3/rmf_traffic/include/rmf_traffic/schedule/ParticipantDescription.hpp	2025-08-16 19:58:03.276242220 +0530
+@@ -20,6 +20,7 @@
+ 
+ #include <string>
+ #include <unordered_map>
++#include <cstdint>
+ 
+ #include <rmf_traffic/Profile.hpp>
+ 
