@@ -12,6 +12,9 @@
 %global qt_package 1
 {% endif -%}
 
+{% if skip_debug -%}
+%global debug_package %{nil}
+{% endif -%}
 Name:           ros-{{ distro }}-{{ package_name.replace('_', '-') }}
 Version:        {{ version }}
 Release:        {{ release if release else 1 }}%{?dist}
@@ -87,20 +90,16 @@ developing applications that use %{name}.
 %prep
 %autosetup -n {{ package_name }}-{{ version }}{% if patches %} -p1{% endif %}
 
-{% if patches -%}
-# Apply patches
-{% for patch in patches -%}
-%patch -P{{ loop.index0 }} -p1
+%build
+{% if build_env -%}
+{% for key, value in build_env.items() -%}
+export {{ key }}={{ value }}
 {% endfor -%}
 {% endif -%}
-
-%build
-cd {{ package_name }}
-%cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo
+%cmake -S {{ source_dir | default(package_name) }} -DCMAKE_BUILD_TYPE=RelWithDebInfo{% if cmake_args %} {{ cmake_args | join(" ") }}{% endif %}
 %cmake_build
 
 %install
-cd {{ package_name }}
 %cmake_install
 
 {% if post_install_commands -%}
