@@ -1,0 +1,31 @@
+--- rmf_task-2.5.1.orig/rmf_task/src/rmf_task/Payload.cpp	2025-01-16 21:42:00.000000000 +0000
++++ rmf_task-2.5.1/rmf_task/src/rmf_task/Payload.cpp	2025-01-16 21:42:00.000000000 +0000
+@@ -16,6 +16,7 @@
+ */
+ 
+ #include <unordered_map>
++#include <cstdint>
+ #include <unordered_set>
+ #include <sstream>
+ 
+--- rmf_task-2.5.1.orig/rmf_task/src/rmf_task/detail/Backup.cpp	2025-01-16 21:42:00.000000000 +0000
++++ rmf_task-2.5.1/rmf_task/src/rmf_task/detail/Backup.cpp	2025-01-16 21:42:00.000000000 +0000
+@@ -18,6 +18,7 @@
+ */
+ 
+ #include <rmf_task/detail/Backup.hpp>
++#include <cstdint>
+ 
+ namespace rmf_task {
+ namespace detail {
+
+--- rmf_task-2.5.1.orig/rmf_task/include/rmf_task/detail/Backup.hpp	2025-01-16 21:42:00.000000000 +0000
++++ rmf_task-2.5.1/rmf_task/include/rmf_task/detail/Backup.hpp	2025-01-16 21:42:00.000000000 +0000
+@@ -23,6 +23,7 @@
+ #include <rmf_utils/impl_ptr.hpp>
+ 
+ #include <cstddef>
++#include <cstdint>
+ #include <string>
+ 
+ namespace rmf_task {

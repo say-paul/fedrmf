@@ -1,16 +1,20 @@
 package_name: rmf_task
-build_depends:
-- ament_cmake
-- rmf_utils
-- rmf_traffic
-- rmf_battery
-- nlohmann_json_schema_validator_vendor
+build_depends: []
 exec_depends: []
 system_depends:
 - cmake
 - gcc-c++
-description: 'RMF package: rmf_task'
-license: Apache-2.0
+- ros2-jazzy-ament_cmake-devel
+- ros2-jazzy-eigen3_cmake_module-devel
+- ros-jazzy-rmf-utils
+- ros-jazzy-rmf-traffic
+- ros-jazzy-rmf-battery
+- boost-devel
+- eigen3-devel
+- json-devel
+- python3-jinja2
+description: Package for managing tasks in the Robotics Middleware Framework
+license: Apache License 2.0
 build_priority: 3
 repository: https://github.com/open-rmf/rmf_task
 version: 2.5.1
@@ -18,3 +22,24 @@ release: 1
 changelog:
 - entry: '* Thu Aug 14 2025 Sayan Paul <paul.sayan@gmail.com> - jazzy.2.5.1-1'
   message: '- Updated from distro/jazzy.repo'
+patches:
+- rmf_task-fedora-build.patch
+build_env:
+  PYTHONPATH: /usr/lib64/ros2-jazzy/lib/python3.13/site-packages
+  AMENT_PREFIX_PATH: /usr/lib64/ros2-jazzy
+  CMAKE_PREFIX_PATH: /usr/lib64/ros2-jazzy
+  PKG_CONFIG_PATH: /usr/lib64/ros2-jazzy/lib/pkgconfig
+  LD_LIBRARY_PATH: /usr/lib64/ros2-jazzy/lib
+cmake_args:
+- -DCMAKE_PREFIX_PATH=/usr/lib64/ros2-jazzy
+skip_debug: true
+custom_files:
+- /usr/lib64/librmf_task.so
+- /usr/include/rmf_task/requests/*
+- /usr/include/rmf_task/phases/*
+- /usr/include/rmf_task/events/*
+- /usr/include/rmf_task/detail/*
+- /usr/include/rmf_task/*
+- /usr/lib64/rmf_task/cmake/*
+- /usr/share/ament_index/resource_index/packages/rmf_task
+- /usr/share/rmf_task/hook/ament_prefix_path.dsv

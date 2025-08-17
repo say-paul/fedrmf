@@ -1,13 +1,18 @@
 package_name: rmf_battery
-build_depends:
-- ament_cmake
-- rmf_utils
+build_depends: []
 exec_depends: []
 system_depends:
 - cmake
 - gcc-c++
-description: 'RMF package: rmf_battery'
-license: Apache-2.0
+- ros2-jazzy-ament_cmake-devel
+- ros2-jazzy-eigen3_cmake_module-devel
+- ros-jazzy-rmf-traffic
+- boost-devel
+- eigen3-devel
+- json-devel
+- python3-jinja2
+description: Package for modelling battery life of robots
+license: Apache License 2.0
 build_priority: 2
 repository: https://github.com/open-rmf/rmf_battery
 version: 0.3.1
@@ -15,3 +20,18 @@ release: 1
 changelog:
 - entry: '* Thu Aug 14 2025 Sayan Paul <paul.sayan@gmail.com> - jazzy.0.3.1-1'
   message: '- Updated from distro/jazzy.repo'
+build_env:
+  PYTHONPATH: /usr/lib64/ros2-jazzy/lib/python3.13/site-packages
+  AMENT_PREFIX_PATH: /usr/lib64/ros2-jazzy
+  CMAKE_PREFIX_PATH: /usr/lib64/ros2-jazzy
+  PKG_CONFIG_PATH: /usr/lib64/ros2-jazzy/lib/pkgconfig
+  LD_LIBRARY_PATH: /usr/lib64/ros2-jazzy/lib
+cmake_args:
+- -DCMAKE_PREFIX_PATH=/usr/lib64/ros2-jazzy
+skip_debug: true
+custom_files:
+- /usr/include/rmf_battery/*
+- /usr/lib64/librmf_battery.so
+- /usr/lib64/rmf_battery/cmake/*
+- /usr/share/rmf_battery/*
+- /usr/share/ament_index/resource_index/packages/rmf_battery
