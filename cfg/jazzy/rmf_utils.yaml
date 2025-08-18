@@ -14,12 +14,14 @@ repository: https://github.com/open-rmf/rmf_utils
 version: 1.6.2
 release: 1
 build_type: cmake
+source_dir: "."
+use_colcon: true
 custom_files:
-- /usr/lib/librmf_utils.so
-- /usr/include/rmf_utils/*
-- /usr/lib64/rmf_utils/cmake/*
-- /usr/share/rmf_utils/*
-- /usr/share/ament_index/resource_index/packages/rmf_utils
+- "%{_libdir}/ros2-jazzy/lib/librmf_utils.so"
+- "%{_libdir}/ros2-jazzy/include/rmf_utils/*"
+- "%{_libdir}/ros2-jazzy/share/colcon-core/packages/rmf_utils"
+- "%{_libdir}/ros2-jazzy/share/rmf_utils/*"
+- "%{_libdir}/ros2-jazzy/share/ament_index/resource_index/packages/rmf_utils"
 changelog:
 - entry: '* Thu Aug 14 2025 Sayan Paul <paul.sayan@gmail.com> - jazzy.1.6.2-1'
   message: '- Updated from distro/jazzy.repo'
