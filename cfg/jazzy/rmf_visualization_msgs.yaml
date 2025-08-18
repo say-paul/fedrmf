@@ -34,16 +34,17 @@ build_env:
   CMAKE_PREFIX_PATH: /usr/lib64/ros2-jazzy
   PKG_CONFIG_PATH: /usr/lib64/ros2-jazzy/lib/pkgconfig
   LD_LIBRARY_PATH: /usr/lib64/ros2-jazzy/lib
-cmake_args:
-- -DCMAKE_PREFIX_PATH=/usr/lib64/ros2-jazzy
+source_dir: "."
+use_colcon: true
 skip_debug: true
 custom_files:
-- /usr/include/rmf_visualization_msgs/*
-- /usr/lib/librmf_visualization_msgs__*.so
-- /usr/share/rmf_visualization_msgs/*
-- /usr/lib/python3.13/site-packages/rmf_visualization_msgs/*
-- /usr/lib/python3.13/site-packages/rmf_visualization_msgs-*/*
-- /usr/share/ament_index/resource_index/package_run_dependencies/rmf_visualization_msgs
-- /usr/share/ament_index/resource_index/packages/rmf_visualization_msgs
-- /usr/share/ament_index/resource_index/parent_prefix_path/rmf_visualization_msgs
-- /usr/share/ament_index/resource_index/rosidl_interfaces/rmf_visualization_msgs
+- "%{_libdir}/ros2-jazzy/include/rmf_visualization_msgs/*"
+- "%{_libdir}/ros2-jazzy/lib/librmf_visualization_msgs__*.so"
+- "%{_libdir}/ros2-jazzy/share/rmf_visualization_msgs/*"
+- "%{_libdir}/ros2-jazzy/lib/python3.13/site-packages/rmf_visualization_msgs/*"
+- "%{_libdir}/ros2-jazzy/lib/python3.13/site-packages/rmf_visualization_msgs-*/*"
+- "%{_libdir}/ros2-jazzy/share/ament_index/resource_index/package_run_dependencies/rmf_visualization_msgs"
+- "%{_libdir}/ros2-jazzy/share/ament_index/resource_index/packages/rmf_visualization_msgs"
+- "%{_libdir}/ros2-jazzy/share/ament_index/resource_index/parent_prefix_path/rmf_visualization_msgs"
+- "%{_libdir}/ros2-jazzy/share/ament_index/resource_index/rosidl_interfaces/rmf_visualization_msgs"
+- "%{_libdir}/ros2-jazzy/share/colcon-core/packages/rmf_visualization_msgs"
