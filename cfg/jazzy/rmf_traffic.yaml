@@ -28,13 +28,15 @@ build_env:
   CMAKE_PREFIX_PATH: /usr/lib64/ros2-jazzy
   PKG_CONFIG_PATH: /usr/lib64/ros2-jazzy/lib/pkgconfig
   LD_LIBRARY_PATH: /usr/lib64/ros2-jazzy/lib
-source_dir: "rmf_traffic"
-cmake_args:
-- -DCMAKE_PREFIX_PATH=/usr/lib64/ros2-jazzy
+source_dir: "."
+use_colcon: true
 skip_debug: true
 custom_files:
-- /usr/include/rmf_traffic/*
-- /usr/lib64/librmf_traffic.so
-- /usr/lib64/rmf_traffic/cmake/*
-- /usr/share/rmf_traffic/*
-- /usr/share/ament_index/resource_index/packages/rmf_traffic
+- "%{_libdir}/ros2-jazzy/include/rmf_traffic/*"
+- "%{_libdir}/ros2-jazzy/share/rmf_traffic/*"
+- "%{_libdir}/ros2-jazzy/share/ament_index/resource_index/packages/rmf_traffic"
+- "%{_libdir}/ros2-jazzy/share/colcon-core/packages/rmf_traffic"
+- "%{_libdir}/ros2-jazzy/share/colcon-core/packages/rmf_traffic_examples"
+- "%{_libdir}/ros2-jazzy/lib/rmf_traffic_examples/*"
+- "%{_libdir}/ros2-jazzy/share/rmf_traffic_examples/*"
+- "%{_libdir}/ros2-jazzy/share/ament_index/resource_index/packages/rmf_traffic_examples"
