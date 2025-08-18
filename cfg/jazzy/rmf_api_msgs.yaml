@@ -17,17 +17,18 @@ changelog:
   message: '- Updated from distro/jazzy.repo'
 build_env:
   PYTHONPATH: /usr/lib64/ros2-jazzy/lib/python3.13/site-packages
-cmake_args:
-- -DCMAKE_PREFIX_PATH=/usr/lib64/ros2-jazzy
-custom_files:
-- /usr/include/rmf_api_msgs/*
-- /usr/share/schemas/*
-- /usr/lib/python3.13/site-packages/rmf_api_msgs/*
-- /usr/lib/python3.13/site-packages/rmf_api_msgs-*/*
-- /usr/share/rmf_api_msgs/*
-- /usr/lib/rmf_api_msgs/*
-- /usr/lib64/rmf_api_msgs/cmake/*
-- /usr/share/ament_index/resource_index/package_run_dependencies/rmf_api_msgs
-- /usr/share/ament_index/resource_index/packages/rmf_api_msgs
-- /usr/share/ament_index/resource_index/parent_prefix_path/rmf_api_msgs
+source_dir: "."
+use_colcon: true
 skip_debug: true
+custom_files:
+- "%{_libdir}/ros2-jazzy/include/rmf_api_msgs/*"
+- "%{_libdir}/ros2-jazzy/share/schemas/*"
+- "%{_libdir}/ros2-jazzy/lib/python3.13/site-packages/rmf_api_msgs/*"
+- "%{_libdir}/ros2-jazzy/lib/python3.13/site-packages/rmf_api_msgs-*/*"
+- "%{_libdir}/ros2-jazzy/share/rmf_api_msgs/*"
+- "%{_libdir}/ros2-jazzy/lib/rmf_api_msgs/*"
+- "%{_libdir}/ros2-jazzy/share/ament_index/resource_index/package_run_dependencies/rmf_api_msgs"
+- "%{_libdir}/ros2-jazzy/share/ament_index/resource_index/packages/rmf_api_msgs"
+- "%{_libdir}/ros2-jazzy/share/ament_index/resource_index/parent_prefix_path/rmf_api_msgs"
+- "%{_libdir}/ros2-jazzy/share/colcon-core/packages/rmf_api_msgs"
+
