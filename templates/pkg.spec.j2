@@ -35,6 +35,12 @@ BuildRequires:  cmake
 BuildRequires:  gcc-c++
 BuildRequires:  pkgconfig
 
+{% if use_colcon -%}
+BuildRequires:  python3-colcon-core
+BuildRequires:  python3-colcon-ros
+BuildRequires:  python3-colcon-common-extensions
+{% endif -%}
+
 {% if ros_distro -%}
 BuildRequires:  ros-{{ distro }}-ament-cmake
 {% endif -%}
@@ -96,11 +102,33 @@ developing applications that use %{name}.
 export {{ key }}={{ value }}
 {% endfor -%}
 {% endif -%}
+{% if use_colcon %}
+# Build with colcon into a temporary local install directory
+set -e
+source /usr/lib64/ros2-{{ distro }}/setup.bash || true
+colcon build \
+  --merge-install \
+  --base-paths {{ source_dir | default('.') }} \
+  --install-base install \
+  --cmake-args \
+    -DPYTHON_EXECUTABLE=/usr/bin/python3 \
+    -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+    -DBUILD_TESTING=OFF{% if cmake_args %} {{ cmake_args | join(' ') }}{% endif %}
+{% else %}
 %cmake -S {{ source_dir | default(package_name) }} -DCMAKE_BUILD_TYPE=RelWithDebInfo{% if cmake_args %} {{ cmake_args | join(" ") }}{% endif %}
 %cmake_build
+{% endif %}
 
 %install
+{% if use_colcon %}
+# Copy the built files from the local install dir to the buildroot
+mkdir -p %{buildroot}/%{_libdir}/ros2-{{ distro }}
+cp -a install/include %{buildroot}/%{_libdir}/ros2-{{ distro }}/ || true
+cp -a install/lib %{buildroot}/%{_libdir}/ros2-{{ distro }}/ || true
+cp -a install/share %{buildroot}/%{_libdir}/ros2-{{ distro }}/ || true
+{% else %}
 %cmake_install
+{% endif %}
 
 {% if post_install_commands -%}
 {% for cmd in post_install_commands -%}
@@ -164,7 +192,7 @@ fi
 {{ file_pattern }}
 {% endfor -%}
 {% else -%}
-/opt/ros/{{ distro }}/*
+%{_libdir}/ros2-{{ distro }}/*
 {% endif -%}
 
 {% if exclude_files -%}

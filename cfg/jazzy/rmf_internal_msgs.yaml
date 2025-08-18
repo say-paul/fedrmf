@@ -18,9 +18,10 @@ system_depends:
 - ros2-jazzy-rosidl_typesupport_introspection_c-devel
 - ros2-jazzy-rosidl_typesupport_introspection_cpp-devel
 - ros2-jazzy-ament_lint_auto-devel
+- ros2-jazzy-geometry_msgs-devel
 - json-devel
 - python3-jinja2
-description: This package contains messages regarding charging and discharging
+description: This repository contains multiple RMF internal message packages
 license: Apache License 2.0
 build_priority: 2
 repository: https://github.com/open-rmf/rmf_internal_msgs
@@ -35,19 +36,21 @@ build_env:
   CMAKE_PREFIX_PATH: /usr/lib64/ros2-jazzy
   PKG_CONFIG_PATH: /usr/lib64/ros2-jazzy/lib/pkgconfig
   LD_LIBRARY_PATH: /usr/lib64/ros2-jazzy/lib
-# Point to subdirectory containing CMakeLists.txt
-source_dir: "rmf_charger_msgs"
+# Build from repository root using superbuild CMakeLists.txt
+source_dir: "."
+use_colcon: true
 cmake_args:
 - -DCMAKE_PREFIX_PATH=/usr/lib64/ros2-jazzy
 skip_debug: true
 custom_files:
-# Building only rmf_charger_msgs package from the meta-package
-- /usr/include/rmf_charger_msgs/*
-- /usr/lib/librmf_charger_msgs__*.so
-- /usr/share/rmf_charger_msgs/*
-- /usr/lib/python3.13/site-packages/rmf_charger_msgs/*
-- /usr/lib/python3.13/site-packages/rmf_charger_msgs-*/*
-- /usr/share/ament_index/resource_index/package_run_dependencies/rmf_charger_msgs
-- /usr/share/ament_index/resource_index/packages/rmf_charger_msgs
-- /usr/share/ament_index/resource_index/parent_prefix_path/rmf_charger_msgs
-- /usr/share/ament_index/resource_index/rosidl_interfaces/rmf_charger_msgs
+# Match working spec %files for colcon merge-install
+- "%{_libdir}/ros2-jazzy/share/colcon-core/packages/rmf_*_msgs"
+- "%{_libdir}/ros2-jazzy/include/rmf_*_msgs/"
+- "%{_libdir}/ros2-jazzy/lib/librmf_*_msgs__*.so"
+- "%{_libdir}/ros2-jazzy/share/rmf_*_msgs/"
+- "%{_libdir}/ros2-jazzy/lib/python3.13/site-packages/rmf_*_msgs/"
+- "%{_libdir}/ros2-jazzy/lib/python3.13/site-packages/rmf_*_msgs-*.egg-info"
+- "%{_libdir}/ros2-jazzy/share/ament_index/resource_index/package_run_dependencies/rmf_*_msgs"
+- "%{_libdir}/ros2-jazzy/share/ament_index/resource_index/packages/rmf_*_msgs"
+- "%{_libdir}/ros2-jazzy/share/ament_index/resource_index/parent_prefix_path/rmf_*_msgs"
+- "%{_libdir}/ros2-jazzy/share/ament_index/resource_index/rosidl_interfaces/rmf_*_msgs"
