@@ -1,13 +1,11 @@
 package_name: menge_vendor
-build_depends:
-- tinyxml-devel
-exec_depends:
-- tinyxml
 system_depends:
 - cmake
 - gcc-c++
 - pkgconf
 - ros2-jazzy-ament_cmake-devel
+- ros2-jazzy-tinyxml2_vendor
+- tinyxml-devel
 description: "Menge is a powerful, cross-platform, modular framework for crowd simulation\
   \ developed at the University of North Carolina - Chapel Hill. This package includes\
   \ the core simulation part of origin menge package, with a bit modification for\
@@ -22,16 +20,15 @@ changelog:
   message: '- Updated from distro/jazzy.repo'
 build_env:
   PYTHONPATH: /usr/lib64/ros2-jazzy/lib/python3.13/site-packages
+source_dir: "."
 cmake_args:
-- -S
-- .
-- -DCMAKE_PREFIX_PATH=/usr/lib64/ros2-jazzy
+- -DCMAKE_INSTALL_PREFIX=/usr/lib64/ros2-jazzy
 custom_files:
-- /usr/lib/libmenge_vendor.so
-- /usr/include/MengeCore/*
-- /usr/share/menge_vendor/*
-- /usr/include/macros.h
-- /usr/include/splinelib/*
-- /usr/share/ament_index/resource_index/package_run_dependencies/menge_vendor
-- /usr/share/ament_index/resource_index/packages/menge_vendor
-- /usr/share/ament_index/resource_index/parent_prefix_path/menge_vendor
+- "%{_libdir}/ros2-jazzy/lib/libmenge_vendor.so"
+- "%{_libdir}/ros2-jazzy/include/MengeCore/*"
+- "%{_libdir}/ros2-jazzy/share/menge_vendor/*"
+- "%{_libdir}/ros2-jazzy/include/macros.h"
+- "%{_libdir}/ros2-jazzy/include/splinelib/*"
+- "%{_libdir}/ros2-jazzy/share/ament_index/resource_index/package_run_dependencies/menge_vendor"
+- "%{_libdir}/ros2-jazzy/share/ament_index/resource_index/packages/menge_vendor"
+- "%{_libdir}/ros2-jazzy/share/ament_index/resource_index/parent_prefix_path/menge_vendor"
