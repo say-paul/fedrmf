@@ -18,7 +18,7 @@
  
  namespace rmf_task {
  namespace detail {
-
+ 
 --- rmf_task-2.5.1.orig/rmf_task/include/rmf_task/detail/Backup.hpp	2025-01-16 21:42:00.000000000 +0000
 +++ rmf_task-2.5.1/rmf_task/include/rmf_task/detail/Backup.hpp	2025-01-16 21:42:00.000000000 +0000
 @@ -23,6 +23,7 @@
@@ -27,5 +27,17 @@
  #include <cstddef>
 +#include <cstdint>
  #include <string>
+ 
+ namespace rmf_task {
+ 
+--- rmf_task-2.5.1.orig/rmf_task/include/rmf_task/Payload.hpp	2025-01-16 21:42:00.000000000 +0000
++++ rmf_task-2.5.1/rmf_task/include/rmf_task/Payload.hpp	2025-01-16 21:42:00.000000000 +0000
+@@ -21,6 +21,7 @@
+ 
+ #include <rmf_utils/impl_ptr.hpp>
+ 
++#include <cstdint>
+ #include <string>
+ #include <vector>
  
  namespace rmf_task {
