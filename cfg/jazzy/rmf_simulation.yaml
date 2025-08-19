@@ -1,16 +1,28 @@
 package_name: rmf_simulation
-build_depends:
-- ament_cmake
-- rmf_building_map_msgs
-- rmf_ros2
+build_depends: []
 exec_depends: []
 system_depends:
 - cmake
 - gcc-c++
+- ros2-jazzy-ament_cmake-devel
+- ros2-jazzy-eigen3_cmake_module-devel
+- eigen3-devel
+- ros-jazzy-rmf-internal-msgs
+- gazebo
 - gazebo-devel
-- sdformat-devel
-description: 'RMF package: rmf_simulation'
-license: Apache-2.0
+- gazebo-libs
+- ros-jazzy-ros-gz-sim
+- ros-jazzy-gz-sim-vendor
+- ros-jazzy-gz-plugin-vendor
+- ros-jazzy-gz-gui-vendor
+- ros-jazzy-gz-msgs-vendor
+- ros-jazzy-gz-transport-vendor
+- ros-jazzy-gz-rendering-vendor
+- ros-jazzy-rmf-building-map-msgs
+- ros-jazzy-menge-vendor
+
+description: Gazebo plugins for building infrastructure simulation
+license: Apache 2.0
 build_priority: 5
 repository: https://github.com/open-rmf/rmf_simulation
 version: 2.3.2
@@ -18,3 +30,23 @@ release: 1
 changelog:
 - entry: '* Thu Aug 14 2025 Sayan Paul <paul.sayan@gmail.com> - jazzy.2.3.2-1'
   message: '- Updated from distro/jazzy.repo'
+build_env:
+  PYTHONPATH: /usr/lib64/ros2-jazzy/lib/python3.13/site-packages
+source_dir: "."
+use_colcon: true
+skip_debug: true
+custom_files:
+- "%{_libdir}/ros2-jazzy/include/rmf_*/*"
+- "%{_libdir}/ros2-jazzy/lib/rmf_*/*"
+- "%{_libdir}/ros2-jazzy/share/rmf_*/*"
+- "%{_libdir}/ros2-jazzy/share/ament_index/resource_index/packages/rmf_*"
+- "%{_libdir}/ros2-jazzy/share/ament_index/resource_index/parent_prefix_path/rmf_*"
+- "%{_libdir}/ros2-jazzy/share/colcon-core/packages/rmf_*"
+- "%{_libdir}/ros2-jazzy/lib/libdispenser_common.so"
+- "%{_libdir}/ros2-jazzy/lib/libingestor_common.so"
+- "%{_libdir}/ros2-jazzy/lib/libreadonly_common.so"
+- "%{_libdir}/ros2-jazzy/lib/librmf_robot_sim_utils.so"
+- "%{_libdir}/ros2-jazzy/lib/libslotcar_common.so"
+- "%{_libdir}/ros2-jazzy/share/ament_index/resource_index/package_run_dependencies/rmf_building_sim_gz_plugins"
+- "%{_libdir}/ros2-jazzy/share/ament_index/resource_index/package_run_dependencies/rmf_robot_sim_common"
+- "%{_libdir}/ros2-jazzy/share/ament_index/resource_index/package_run_dependencies/rmf_robot_sim_gz_plugins"
