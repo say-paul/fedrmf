@@ -17,11 +17,12 @@ build_type: cmake
 source_dir: "."
 use_colcon: true
 custom_files:
-- "%{_libdir}/ros2-jazzy/lib/librmf_utils.so"
+- "%{_libdir}/ros2-jazzy/lib*/librmf_utils.so"
 - "%{_libdir}/ros2-jazzy/include/rmf_utils/*"
 - "%{_libdir}/ros2-jazzy/share/colcon-core/packages/rmf_utils"
 - "%{_libdir}/ros2-jazzy/share/rmf_utils/*"
 - "%{_libdir}/ros2-jazzy/share/ament_index/resource_index/packages/rmf_utils"
+- "%{_libdir}/ros2-jazzy/lib*/rmf_utils/cmake/*"
 changelog:
 - entry: '* Thu Aug 14 2025 Sayan Paul <paul.sayan@gmail.com> - jazzy.1.6.2-1'
   message: '- Updated from distro/jazzy.repo'

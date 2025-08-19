@@ -45,3 +45,7 @@ custom_files:
 - "%{_libdir}/ros2-jazzy/share/ament_index/resource_index/packages/rmf_task_sequence"
 - "%{_libdir}/ros2-jazzy/share/colcon-core/packages/rmf_task"
 - "%{_libdir}/ros2-jazzy/share/colcon-core/packages/rmf_task_sequence"
+- "%{_libdir}/ros2-jazzy/lib*/librmf_task.so"
+- "%{_libdir}/ros2-jazzy/lib*/librmf_task_sequence.so"
+- "%{_libdir}/ros2-jazzy/lib*/rmf_task/cmake/*"
+- "%{_libdir}/ros2-jazzy/lib*/rmf_task_sequence/cmake/*"
