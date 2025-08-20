@@ -71,6 +71,10 @@ class SpecGenerator:
             'rmw_implementation': f'ros-{distro}-rmw-implementation',
             'rosidl_default_generators': f'ros-{distro}-rosidl-default-generators',
             'rosidl_default_runtime': f'ros-{distro}-rosidl-default-runtime',
+            'rosidl_typesupport_c': f'ros-{distro}-rosidl-typesupport-c',
+            'rosidl_typesupport_cpp': f'ros-{distro}-rosidl-typesupport-cpp',
+            'rosidl_typesupport_introspection_c': f'ros-{distro}-rosidl-typesupport-introspection-c',
+            'rosidl_typesupport_introspection_cpp': f'ros-{distro}-rosidl-typesupport-introspection-cpp',
             'tf2': f'ros-{distro}-tf2',
             'tf2_ros': f'ros-{distro}-tf2-ros',
             'tf2_geometry_msgs': f'ros-{distro}-tf2-geometry-msgs',
@@ -94,27 +98,16 @@ class SpecGenerator:
         
         # System package mappings
         self.system_mappings = {
-            'eigen3': 'eigen3-devel',
-            'yaml-cpp': 'yaml-cpp-devel',
-            'opencv': 'opencv-devel',
-            'qt5': 'qt5-qtbase-devel',
-            'boost': 'boost-devel',
-            'openssl': 'openssl-devel',
-            'sqlite3': 'sqlite-devel',
-            'curl': 'libcurl-devel',
-            'pybind11': 'pybind11-devel',
-            'json': 'json-devel',
             'cmake': 'cmake',
-            'gcc-c++': 'gcc-c++',
-            'pkgconfig': 'pkgconfig',
-            'python3-devel': 'python3-devel',
-            'python3-yaml': 'python3-yaml',
-            'python3-requests': 'python3-requests',
-            'python3-shapely': 'python3-shapely',
-            'tinyxml-devel': 'tinyxml-devel',
-            'opengl-devel': 'mesa-libGL-devel',
-            'gazebo-devel': 'gazebo-devel',
-            'sdformat-devel': 'sdformat-devel',
+            'eigen3': 'eigen3-devel',
+            'eigen': 'eigen3-devel',
+            'yaml-cpp': 'yaml-cpp-devel',
+            'git': 'git',
+            'python3-setuptools': 'python3-setuptools',
+            'python3-pip': 'python3-pip',
+            'python3-colcon-common-extensions': 'python3-colcon-common-extensions',
+            'python3-jinja2': 'python3-jinja2',
+            'json-devel': 'json-devel',
         }
 
     def resolve_dependency(self, dep_name, distro):
@@ -263,7 +256,20 @@ class SpecGenerator:
             with open(cfg_file, 'r') as f:
                 config = yaml.safe_load(f)
             
-            # Auto-detect patches
+            # Auto-inject colcon system dependencies when requested
+            if config.get('use_colcon'):
+                colcon_deps = [
+                    'python3-colcon-core',
+                    'python3-colcon-ros',
+                    'python3-colcon-common-extensions',
+                ]
+                system_deps = list(config.get('system_depends') or [])
+                for dep in colcon_deps:
+                    if dep not in system_deps:
+                        system_deps.append(dep)
+                config['system_depends'] = system_deps
+            
+            # Auto-detect patches (always; caller can remove from cfg if undesired)
             patches = self.find_patches(package_name)
             if patches:
                 config['patches'] = patches

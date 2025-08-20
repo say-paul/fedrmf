@@ -1,0 +1,20 @@
+*
+!.gitignore
+
+# Keep these directories and their contents
+!cfg/
+!cfg/**
+!distro/
+!distro/**
+!templates/
+!templates/**
+!patches/
+!patches/**
+!tools/
+!tools/**
+
+# Keep these files at the repo root
+!build_rmf_fedora
+!build_rmf_fedora.*
+!Makefile
+!RMF*.md
