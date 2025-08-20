@@ -123,9 +123,10 @@ colcon build \
 {% if use_colcon %}
 # Copy the built files from the local install dir to the buildroot
 mkdir -p %{buildroot}/%{_libdir}/ros2-{{ distro }}
-cp -a install/include %{buildroot}/%{_libdir}/ros2-{{ distro }}/ || true
-cp -a install/lib %{buildroot}/%{_libdir}/ros2-{{ distro }}/ || true
-cp -a install/share %{buildroot}/%{_libdir}/ros2-{{ distro }}/ || true
+if [ -d install/include ]; then cp -a install/include %{buildroot}/%{_libdir}/ros2-{{ distro }}/; fi
+if [ -d install/lib ]; then cp -a install/lib %{buildroot}/%{_libdir}/ros2-{{ distro }}/; fi
+if [ -d install/lib64 ]; then cp -a install/lib64 %{buildroot}/%{_libdir}/ros2-{{ distro }}/; fi
+if [ -d install/share ]; then cp -a install/share %{buildroot}/%{_libdir}/ros2-{{ distro }}/; fi
 {% else %}
 %cmake_install
 {% endif %}
