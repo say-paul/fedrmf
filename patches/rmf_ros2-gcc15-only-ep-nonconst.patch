@@ -1,0 +1,13 @@
+diff --git a/rmf_fleet_adapter/rmf_rxcpp/RxCpp-4.1.0/Rx/v2/src/rxcpp/rx-notification.hpp b/rmf_fleet_adapter/rmf_rxcpp/RxCpp-4.1.0/Rx/v2/src/rxcpp/rx-notification.hpp
+index 20e0c69..3f13619 100644
+--- a/rmf_fleet_adapter/rmf_rxcpp/RxCpp-4.1.0/Rx/v2/src/rxcpp/rx-notification.hpp
++++ b/rmf_fleet_adapter/rmf_rxcpp/RxCpp-4.1.0/Rx/v2/src/rxcpp/rx-notification.hpp
+@@ -167,7 +167,7 @@ private:
+         virtual void accept(const typename base::observer_type& o) const {
+             o.on_error(ep);
+         }
+-        const rxu::error_ptr ep;
++        rxu::error_ptr ep;
+     };
+ 
+     struct on_completed_notification : public base {

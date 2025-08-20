@@ -1,18 +1,36 @@
 package_name: rmf_ros2
-build_depends:
-- ament_cmake
-- rmf_utils
-- rmf_traffic
-- rmf_task
-- rmf_battery
-- rmf_building_map_msgs
-- rmf_internal_msgs
+build_depends: []
 exec_depends: []
 system_depends:
 - cmake
 - gcc-c++
-description: 'RMF package: rmf_ros2'
-license: Apache-2.0
+- ros2-jazzy-ament_cmake-devel
+- ros-jazzy-rclcpp-components
+- ros2-jazzy-eigen3_cmake_module-devel
+- ros-jazzy-rmf-utils
+- ros-jazzy-rmf-traffic
+- ros-jazzy-rmf-task
+- ros-jazzy-rmf-battery
+- ros-jazzy-rmf-api-msgs
+- ros-jazzy-rmf-building-map-msgs
+- ros-jazzy-rmf-internal-msgs
+- ros2-jazzy-backward_ros
+- ros-jazzy-nlohmann-json-schema-validator-vendor
+- boost-devel
+- eigen3-devel
+- json-devel
+- nlohmann-json-devel
+- zlib-devel
+- libuuid-devel
+- proj-devel
+- python3-jinja2
+- websocketpp-devel
+- yaml-cpp-devel
+- pybind11-devel
+- ros2-jazzy-pybind11_vendor-devel
+- ros-jazzy-pybind11-json-vendor
+description: ROS2 integration packages for RMF including fleet adapter, task and traffic management
+license: Apache License 2.0
 build_priority: 4
 repository: https://github.com/open-rmf/rmf_ros2
 version: 2.7.2
@@ -20,3 +38,29 @@ release: 1
 changelog:
 - entry: '* Thu Aug 14 2025 Sayan Paul <paul.sayan@gmail.com> - jazzy.2.7.2-1'
   message: '- Updated from distro/jazzy.repo'
+patches:
+- rmf_ros2-gcc15-only-ep-nonconst.patch
+build_env:
+  PYTHONPATH: /usr/lib64/ros2-jazzy/lib/python3.13/site-packages
+  AMENT_PREFIX_PATH: /usr/lib64/ros2-jazzy
+  CMAKE_PREFIX_PATH: /usr/lib64/ros2-jazzy:/usr
+  PKG_CONFIG_PATH: /usr/lib64/ros2-jazzy/lib/pkgconfig
+  LD_LIBRARY_PATH: /usr/lib64/ros2-jazzy/lib
+source_dir: "."
+use_colcon: true
+skip_debug: true
+custom_files:
+- "%{_libdir}/ros2-jazzy/include/rmf_*/*"
+- "%{_libdir}/ros2-jazzy/lib*/librmf_*.so*"
+- "%{_libdir}/ros2-jazzy/share/rmf_*/*"
+- "%{_libdir}/ros2-jazzy/lib/python*/site-packages/rmf_fleet_adapter*/*"
+- "%{_libdir}/ros2-jazzy/lib/python*/site-packages/rmf_charging_schedule*/*"
+- "%{_libdir}/ros2-jazzy/lib/python/site-packages/rmf_adapter*.so"
+- "%{_libdir}/ros2-jazzy/lib/rmf_*/*"
+- "%{_libdir}/ros2-jazzy/share/ament_index/resource_index/rclcpp_components/rmf_*"
+- "%{_libdir}/ros2-jazzy/lib/librobot_state_aggregator_main.so"
+- "%{_libdir}/ros2-jazzy/share/ament_index/resource_index/packages/rmf_*"
+- "%{_libdir}/ros2-jazzy/share/ament_index/resource_index/package_run_dependencies/rmf_*"
+- "%{_libdir}/ros2-jazzy/share/ament_index/resource_index/parent_prefix_path/rmf_*"
+- "%{_libdir}/ros2-jazzy/share/colcon-core/packages/rmf_*"
+
