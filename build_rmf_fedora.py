@@ -16,6 +16,150 @@ import argparse
 import networkx as nx
 import json
 from urllib.parse import urlparse
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import threading
+import time
+
+# Allowed COPR chroots (strict whitelist)
+CHROOT_ALLOWED = {
+    'fedora-42-x86_64', 'fedora-42-aarch64',
+    'fedora-43-x86_64', 'fedora-43-aarch64',
+    'fedora-rawhide-x86_64', 'fedora-rawhide-aarch64',
+}
+
+# -------------------- New Orchestrator Utilities --------------------
+
+def run_cmd(cmd, cwd=None, verbose=False):
+    env = os.environ.copy()
+    try:
+        if verbose:
+            print(f"$ {' '.join(cmd)}")
+        result = subprocess.run(cmd, cwd=cwd, text=True, capture_output=not verbose, check=True)
+        return result.stdout if not verbose else ""
+    except subprocess.CalledProcessError as e:
+        if not verbose:
+            sys.stderr.write(e.stdout or "")
+            sys.stderr.write(e.stderr or "")
+        raise
+
+
+def run_cmd_stream(cmd, cwd=None, prefix: str = "", verbose: bool = True) -> int:
+    """Run a command and stream stdout/stderr live. Returns exit code."""
+    if verbose:
+        print(f"$ {' '.join(cmd)}")
+    proc = subprocess.Popen(cmd, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+    assert proc.stdout is not None
+    for line in proc.stdout:
+        if prefix:
+            print(f"{prefix} | {line.rstrip()}")
+        else:
+            print(line.rstrip())
+    proc.wait()
+    return proc.returncode
+
+
+def load_depends_map(cfg_path: Path) -> dict:
+    build_order_json = cfg_path / 'build-order.json'
+    if not build_order_json.exists():
+        raise FileNotFoundError(f"build-order.json not found at {build_order_json}")
+    with open(build_order_json, 'r') as f:
+        data = json.load(f)
+    depends = data.get('depends')
+    if not isinstance(depends, dict):
+        raise ValueError("Invalid build-order.json: missing 'depends' map")
+    return depends
+
+
+def generate_spec(distro: str, package: str, cfg_base_dir: Path, verbose: bool):
+    cmd = [
+        sys.executable, 'tools/generate_specs.py',
+        '--distro', distro,
+        '--package', package,
+        '--output-dir', 'fedrmf/SPECS',
+        '--cfg-dir', str(cfg_base_dir),
+        '--template-dir', 'templates',
+        '--patches-dir', 'patches',
+    ]
+    # stream short output to provide live feedback for spec gen
+    returncode = run_cmd_stream(cmd, prefix=f"[{package}] gen-spec", verbose=verbose)
+    if returncode != 0:
+        raise RuntimeError(f"Spec generation failed for {package}")
+
+
+def spectool_download(spec_path: Path, sources_dir: Path, verbose: bool):
+    cmd = [
+        'spectool', '-g', '-R', '--define', f"_sourcedir {sources_dir}", str(spec_path)
+    ]
+    returncode = run_cmd_stream(cmd, prefix=f"[{spec_path.stem}] spectool", verbose=verbose)
+    if returncode != 0:
+        raise RuntimeError(f"spectool failed for {spec_path}")
+
+
+def build_srpm(topdir: Path, spec_path: Path, sources_dir: Path, srpms_dir: Path, verbose: bool) -> Path:
+    cmd = [
+        'rpmbuild',
+        '--define', f"_topdir {topdir}",
+        '--define', f"_sourcedir {sources_dir}",
+        '--define', f"_srcrpmdir {srpms_dir}",
+        '-bs', str(spec_path)
+    ]
+    returncode = run_cmd_stream(cmd, prefix=f"[{spec_path.stem}] srpm", verbose=verbose)
+    if returncode != 0:
+        raise RuntimeError(f"SRPM build failed for {spec_path}")
+    # Find newest SRPM
+    srpms = sorted(srpms_dir.glob('*.src.rpm'), key=lambda p: p.stat().st_mtime, reverse=True)
+    if not srpms:
+        raise FileNotFoundError(f"No SRPM produced in {srpms_dir}")
+    return srpms[0]
+
+
+def copr_submit(repo: str, srpm: Path, chroots: list, enable_net: bool, verbose: bool) -> str:
+    cmd = ['copr-cli', 'build', repo, str(srpm)]
+    for ch in chroots:
+        cmd.extend(['--chroot', ch])
+    if enable_net:
+        cmd.extend(['--enable-net', 'on'])
+    # Always capture output so we can parse the build id, but echo the command
+    if verbose:
+        print(f"$ {' '.join(cmd)}")
+    try:
+        res = subprocess.run(cmd, text=True, capture_output=True, check=True)
+        out = res.stdout or ""
+        err = res.stderr or ""
+        if verbose and out.strip():
+            print(out.strip())
+        if verbose and err.strip():
+            print(err.strip())
+    except subprocess.CalledProcessError as e:
+        if verbose:
+            if e.stdout:
+                print(e.stdout)
+            if e.stderr:
+                print(e.stderr)
+        raise
+    build_id = ""
+    for line in (out or "").splitlines():
+        if 'Created builds:' in line:
+            build_id = line.strip().split()[-1]
+            break
+    if not build_id:
+        for line in (out or "").splitlines():
+            if '/coprs/build/' in line:
+                build_id = line.rsplit('/', 1)[-1].strip()
+                break
+    if verbose:
+        print(f"[copr] submitted {srpm.name} -> build {build_id or 'UNKNOWN'}")
+    return build_id
+
+
+def copr_watch(build_id: str, pkg: str, verbose: bool) -> bool:
+    if not build_id:
+        return False
+    cmd = ['copr-cli', 'watch-build', build_id]
+    rc = run_cmd_stream(cmd, prefix=f"[{pkg}] copr", verbose=verbose)
+    return rc == 0
+
+# -------------------- Legacy builder class kept below (unused by new CLI) --------------------
 
 class RMFFedoraBuilder:
     def __init__(self, distro='jazzy', rebuild=False, only_new=False, enable_net=False, verbose=False,
@@ -304,6 +448,31 @@ enabled_metadata=1
             return True
         return False
 
+    def _load_cfg_flags(self, package_name: str) -> dict:
+        """Load per-package flags from cfg/<distro>/<package>.yaml if present."""
+        cfg_file = self.base_dir / 'cfg' / self.distro / f"{package_name}.yaml"
+        flags = { 'vendor_package': False, 'enable_net': False }
+        if cfg_file.exists():
+            try:
+                with open(cfg_file, 'r') as f:
+                    data = yaml.safe_load(f) or {}
+                flags['vendor_package'] = bool(data.get('vendor_package', False))
+                # Allow explicit override
+                flags['enable_net'] = bool(data.get('enable_net', flags['vendor_package']))
+            except Exception as e:
+                self.log(f"Warning: failed to read flags from {cfg_file}: {e}", verbose_only=True)
+        return flags
+
+    def package_needs_network(self, package_name: str) -> bool:
+        """Determine if a package needs network access during build."""
+        # Global override
+        if self.enable_net:
+            return True
+        flags = self._load_cfg_flags(package_name)
+        # Heuristic: any package with name ending with _vendor likely needs net
+        heuristic = package_name.endswith('_vendor')
+        return bool(flags.get('enable_net') or heuristic)
+
     def copr_build_package(self, package_name):
         """Build package in COPR"""
         if not self.copr_repo:
@@ -343,6 +512,11 @@ enabled_metadata=1
                 str(srpm_file),
                 '--chroot', self.chroot
             ]
+            
+            # Enable network for this package if needed
+            if self.package_needs_network(package_name):
+                copr_cmd.extend(['--enable-net', 'on'])
+                self.log(f"Enabling network for {package_name} (detected vendor/enable_net)")
             
             self.log(f"Submitting {package_name} to COPR repo {self.copr_repo}")
             result = subprocess.run(copr_cmd, capture_output=True, text=True)
@@ -591,7 +765,7 @@ BuildRequires:  ros-{self.distro}-rclcpp-devel
         build_deps = set()
         for dep in package_info['build_depends']:
             mapped_dep = self.map_ros_dependency(dep)
-            if mapped_dep and mapped_dep != f'ros-{self.distro}-{package_info["name"].replace("_", "-")}':
+            if mapped_dep and mapped_dep != f'ros-{self.distro}-{package_info["name"].replace("_", "-") }':
                 build_deps.add(mapped_dep)
         
         for dep in sorted(build_deps):
@@ -605,7 +779,7 @@ Requires:       ros-{self.distro}-rclcpp
         runtime_deps = set()
         for dep in package_info['exec_depends']:
             mapped_dep = self.map_ros_dependency(dep)
-            if mapped_dep and mapped_dep != f'ros-{self.distro}-{package_info["name"].replace("_", "-")}':
+            if mapped_dep and mapped_dep != f'ros-{self.distro}-{package_info["name"].replace("_", "-") }':
                 runtime_deps.add(mapped_dep)
         
         for dep in sorted(runtime_deps):
@@ -753,134 +927,174 @@ source /opt/ros/{self.distro}/setup.bash
             # Cleanup
             self.cleanup_temp_workspace()
 
+# -------------------- New Main Orchestrator --------------------
+
+def pipeline_build(cfg_path: Path, distro: str, chroots: list, skip_packages: set, continue_on_failure: bool, enable_net: bool, builders: int, verbose: bool, copr_repo=None):
+    # Resolve dirs
+    topdir = Path('fedrmf')
+    specs_dir = topdir / 'SPECS'
+    sources_dir = topdir / 'SOURCES'
+    srpms_dir = topdir / 'SRPMS'
+    build_dir = topdir / 'BUILD'
+    # Ensure tree
+    for d in (specs_dir, sources_dir, srpms_dir, build_dir, topdir / 'RPMS'):
+        d.mkdir(parents=True, exist_ok=True)
+
+    # Load depends
+    depends = load_depends_map(cfg_path)
+    # Apply skip
+    for s in list(skip_packages):
+        depends.pop(s, None)
+    for k in list(depends.keys()):
+        depends[k] = [d for d in depends[k] if d not in skip_packages]
+
+    # Determine COPR repo (CLI argument overrides environment)
+    repo_value = copr_repo or os.environ.get('COPR_REPO')
+    if not repo_value:
+        raise RuntimeError("COPR repository not specified. Provide --copr-repo or set COPR_REPO env var (expected 'user/repo')")
+
+    # Compute indegrees
+    indeg = {pkg: len(deps) for pkg, deps in depends.items()}
+    ready = [p for p, d in indeg.items() if d == 0]
+    building = {}
+    done = {}
+    failed = {}
+    blocked = set()
+    lock = threading.Lock()
+    total_pkgs = len(depends)
+    scheduled = set()
+    submitted = set()
+
+    def print_stats(event: str = "", pkg: str = ""):
+        watching = len(building)
+        passed = len(done)
+        failed_n = len(failed)
+        stats_line = f"{watching}/{passed}/{failed_n}/{total_pkgs}"
+        if event and pkg:
+            print(f"[stats] {stats_line} {event} {pkg}")
+        else:
+            print(f"[stats] {stats_line}")
+
+    def build_one(pkg: str) -> tuple:
+        try:
+            # 4. generate spec
+            generate_spec(distro, pkg, cfg_path, verbose)
+            spec_path = specs_dir / f"ros-{distro}-{pkg.replace('_','-')}.spec"
+            # 5. spectool
+            spectool_download(spec_path, sources_dir, verbose)
+            # 6. srpm
+            srpm = build_srpm(topdir, spec_path, sources_dir, srpms_dir, verbose)
+            # 7. copr build and monitor
+            build_id = copr_submit(repo_value, srpm, chroots, enable_net, verbose)
+            with lock:
+                building[pkg] = build_id
+                submitted.add(pkg)
+            ok = copr_watch(build_id, pkg, verbose)
+            return (pkg, ok, build_id)
+        except Exception as e:
+            return (pkg, False, str(e))
+
+    with ThreadPoolExecutor(max_workers=builders) as executor:
+        futures = {}
+        def maybe_schedule():
+            nonlocal ready
+            while ready and len(futures) < builders:
+                pkg = ready.pop(0)
+                # Skip if any dependency failed
+                deps = depends.get(pkg, [])
+                if any(d in failed for d in deps):
+                    blocked.add(pkg)
+                    continue
+                # De-dup guard: skip if already scheduled/submitted/done/failed/building
+                if pkg in scheduled or pkg in submitted or pkg in done or pkg in failed or pkg in building:
+                    continue
+                with lock:
+                    building[pkg] = ""
+                    scheduled.add(pkg)
+                    print_stats("start", pkg)
+                futures[executor.submit(build_one, pkg)] = pkg
+        maybe_schedule()
+        while futures:
+            for future in as_completed(list(futures.keys())):
+                pkg = futures.pop(future)
+                ok, build_id = False, ""
+                try:
+                    pkg_done, ok, build_id = future.result()
+                except Exception as e:
+                    ok = False
+                    build_id = str(e)
+                with lock:
+                    building.pop(pkg, None)
+                    if ok:
+                        done[pkg] = build_id
+                    else:
+                        failed[pkg] = build_id
+                    print_stats("done" if ok else "failed", pkg)
+                # Update indegrees only for successful builds
+                if ok:
+                    for p, deps in depends.items():
+                        if pkg in deps:
+                            indeg[p] -= 1
+                            if indeg[p] == 0 and p not in done and p not in failed and p not in building and p not in ready and p not in scheduled:
+                                # Ensure none of p's deps failed before scheduling
+                                if not any(d in failed for d in deps):
+                                    ready.append(p)
+                                else:
+                                    blocked.add(p)
+                else:
+                    # On failure, mark dependents as blocked
+                    for p, deps in depends.items():
+                        if pkg in deps:
+                            blocked.add(p)
+                # schedule next
+                maybe_schedule()
+            time.sleep(0.1)
+
+    # Print status
+    print("== Build Summary ==")
+    print(f"Succeeded ({len(done)}): {', '.join(sorted(done.keys()))}")
+    print(f"Failed ({len(failed)}): {', '.join(sorted(failed.keys()))}")
+    pending = sorted(set(depends.keys()) - set(done.keys()) - set(failed.keys()))
+    print(f"Pending ({len(pending)}): {', '.join(pending)}")
+    if not continue_on_failure and failed:
+        sys.exit(1)
+    return 0
+
+
+def parse_args_new():
+    p = argparse.ArgumentParser(description='RMF Fedora mass builder (COPR orchestrator)')
+    p.add_argument('--cfg-path', required=False, default='cfg', help='Base cfg directory containing build-order.json (default: cfg)')
+    p.add_argument('--distro', required=True, help='ROS distro (e.g., jazzy)')
+    p.add_argument('--chroot', action='append', required=True, help='Target chroot (can repeat)')
+    p.add_argument('--skip-package', action='append', default=[], help='Package to skip (can repeat)')
+    p.add_argument('--continue-on-failure', action='store_true', help='Continue even if a package fails')
+    p.add_argument('--enable-net', action='store_true', help='Enable network during COPR build')
+    p.add_argument('--builder', type=int, default=4, help='Max concurrent builders (default: 4)')
+    p.add_argument('--copr-repo', help="COPR repository to submit builds to (format: 'user/repo'). Overrides COPR_REPO env var if set.")
+    p.add_argument('-v', '--verbose', action='store_true')
+    args = p.parse_args()
+    # Validate chroots
+    bad = [c for c in (args.chroot or []) if c not in CHROOT_ALLOWED]
+    if bad:
+        p.error(f"Unsupported chroot(s): {', '.join(bad)}. Allowed: {', '.join(sorted(CHROOT_ALLOWED))}")
+    return args
+
+
 def main():
-    parser = argparse.ArgumentParser(
-        description='Fedora packaging builder for Open-RMF',
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
-Examples:
-  python3 build_rmf_fedora.py jazzy
-  python3 build_rmf_fedora.py -r jazzy          # Rebuild all packages
-  python3 build_rmf_fedora.py --only-new jazzy  # Only build new packages
-  python3 build_rmf_fedora.py --enable-net jazzy # Enable network during build
-  python3 build_rmf_fedora.py --copr-repo user/repo --chroot fedora-39-x86_64 jazzy
-  python3 build_rmf_fedora.py -r --only-new --enable-net --verbose jazzy
-        """
-    )
-    
-    parser.add_argument(
-        'distro',
-        nargs='?',
-        default='jazzy',
-        help='ROS distribution (default: jazzy)'
-    )
-    
-    parser.add_argument(
-        '-r', '--rebuild',
-        action='store_true',
-        help='Rebuild all packages, removing existing spec files first'
-    )
-    
-    parser.add_argument(
-        '--only-new',
-        action='store_true',
-        help='Only process packages that don\'t already have spec files and RPMs'
-    )
-    
-    parser.add_argument(
-        '--enable-net',
-        action='store_true',
-        help='Enable network access during build (allows downloading dependencies)'
-    )
-    
-    parser.add_argument(
-        '-v', '--verbose',
-        action='store_true',
-        help='Enable verbose output'
-    )
-    
-    parser.add_argument(
-        '--list-existing',
-        action='store_true',
-        help='List existing packages and exit'
-    )
-    
-    parser.add_argument(
-        '--copr-repo',
-        help='Target COPR repository (user/repo format)'
-    )
-    
-    parser.add_argument(
-        '--chroot',
-        help='Target chroot for builds (e.g., fedora-39-x86_64)'
-    )
-    
-    parser.add_argument(
-        '--mock-config',
-        help='Path to custom mock configuration file'
-    )
-    
-    parser.add_argument(
-        '--build-order-only',
-        action='store_true',
-        help='Only create build order, don\'t generate specs'
-    )
-    
-    parser.add_argument(
-        '--load-build-order',
-        action='store_true',
-        help='Load existing build order instead of creating new one'
-    )
-    
-    args = parser.parse_args()
-    
-    builder = RMFFedoraBuilder(
+    args = parse_args_new()
+    cfg_path = Path(args.cfg_path)
+    rc = pipeline_build(
+        cfg_path=cfg_path,
         distro=args.distro,
-        rebuild=args.rebuild,
-        only_new=args.only_new,
+        chroots=args.chroot,
+        skip_packages=set(args.skip_package or []),
+        continue_on_failure=args.continue_on_failure,
         enable_net=args.enable_net,
+        builders=args.builder,
         verbose=args.verbose,
         copr_repo=args.copr_repo,
-        chroot=args.chroot,
-        mock_config=args.mock_config
     )
-    
-    if args.list_existing:
-        builder.scan_existing_packages()
-        print(f"Existing spec files ({len(builder.existing_specs)}):")
-        for spec in sorted(builder.existing_specs):
-            print(f"  {spec}")
-        print(f"\nExisting RPM packages ({len(builder.existing_rpms)}):")
-        for rpm in sorted(builder.existing_rpms):
-            print(f"  {rpm}")
-        return
-    
-    if args.load_build_order:
-        if builder.load_build_order():
-            print("Loaded existing build order:")
-            for i, package in enumerate(builder.build_order, 1):
-                print(f"  {i:2d}. {package}")
-        else:
-            print("No existing build order found.")
-        return
-    
-    if args.build_order_only:
-        # Only create dependency graph and build order
-        builder.setup_temp_workspace()
-        try:
-            repos_file = builder.build_dir / 'rmf.repos'
-            if repos_file.exists():
-                repositories = builder.parse_rmf_repos(repos_file)
-                builder.build_dependency_graph(repositories)
-                builder.create_build_order()
-                builder.save_build_order()
-            else:
-                print(f"Error: {repos_file} not found. Run 'make fetch-repos' first.")
-        finally:
-            builder.cleanup_temp_workspace()
-        return
-    
-    builder.build_packages()
+    sys.exit(rc)
 
 if __name__ == '__main__':
     main() 

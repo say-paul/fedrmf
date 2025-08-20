@@ -15,7 +15,7 @@ import glob
 
 class SpecGenerator:
     def __init__(self, distro='jazzy', template_dir='templates', cfg_base_dir='cfg', 
-                 output_dir='specs_generated', patches_dir='patches'):
+                 output_dir='fedrmf/SPECS', patches_dir='patches'):
         self.distro = distro
         self.template_dir = Path(template_dir)
         self.cfg_base_dir = Path(cfg_base_dir)
@@ -28,7 +28,14 @@ class SpecGenerator:
         
         # Ensure directories exist
         self.cfg_dir.mkdir(parents=True, exist_ok=True)
-        self.output_dir.mkdir(exist_ok=True)
+        # Ensure rpmbuild-like tree under fedrmf/
+        self.output_dir.mkdir(parents=True, exist_ok=True)  # SPECS
+        # Derive fedrmf root from SPECS path
+        fedrmf_root = Path('fedrmf')
+        (fedrmf_root / 'SOURCES').mkdir(parents=True, exist_ok=True)
+        (fedrmf_root / 'BUILD').mkdir(parents=True, exist_ok=True)
+        (fedrmf_root / 'RPMS').mkdir(parents=True, exist_ok=True)
+        (fedrmf_root / 'SRPMS').mkdir(parents=True, exist_ok=True)
         
         # Setup Jinja2 environment
         self.jinja_env = Environment(
@@ -488,7 +495,7 @@ def main():
     parser.add_argument('--distro', default='jazzy', help='ROS distribution (default: jazzy)')
     parser.add_argument('--template-dir', default='templates', help='Templates directory')
     parser.add_argument('--cfg-dir', default='cfg', help='Base configuration directory')
-    parser.add_argument('--output-dir', default='specs_generated', help='Output directory for generated specs')
+    parser.add_argument('--output-dir', default='fedrmf/SPECS', help='Output directory for generated specs (default: fedrmf/SPECS)')
     parser.add_argument('--patches-dir', default='patches', help='Patches directory')
     parser.add_argument('--package', help='Generate spec for specific package only')
     parser.add_argument('--update-cfg', action='store_true', help='Update cfg files from repos file')
