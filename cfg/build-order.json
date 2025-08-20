@@ -12,9 +12,6 @@
     "rmf_traffic": [
       "rmf_utils"
     ],
-    "rmf_traffic_editor": [
-      "rmf_building_map_msgs"
-    ],
     "rmf_battery": [
       "rmf_traffic"
     ],
