@@ -11,21 +11,23 @@ import argparse
 import urllib.request
 import urllib.error
 from pathlib import Path
-from typing import Dict, List, Set, Tuple
+from typing import Dict, List, Set, Tuple, Optional
 import hashlib
 import networkx as nx
 
 class RMFDependencyManager:
-    def __init__(self, cfg_dir='cfg', sources_dir='fedrmf/SOURCES', build_dir='fedrmf'):
+    def __init__(self, cfg_dir='cfg', sources_dir='fedrmf/SOURCES', build_dir='fedrmf', distro: str = 'jazzy', skip_packages: Optional[Set[str]] = None):
         self.cfg_dir = Path(cfg_dir)
         self.sources_dir = Path(sources_dir)
         self.build_dir = Path(build_dir)
+        self.distro = distro
+        self.skip_packages = set(skip_packages or [])
         
         # Ensure directories exist
         self.sources_dir.mkdir(parents=True, exist_ok=True)
         self.build_dir.mkdir(parents=True, exist_ok=True)
         
-        self.packages = {}
+        self.packages: Dict[str, dict] = {}
         self.dependency_graph = nx.DiGraph()
         
     def load_package_configs(self):
@@ -34,7 +36,7 @@ class RMFDependencyManager:
         yaml_files = [f for f in yaml_files if not f.name.startswith('_') 
                      and f.name not in ['rmf_deps.yaml', 'files.yaml']]
         
-        print(f"Loading {len(yaml_files)} package configurations...")
+        print(f"Loading {len(yaml_files)} package configurations from {self.cfg_dir}...")
         
         for yaml_file in yaml_files:
             try:
@@ -43,6 +45,9 @@ class RMFDependencyManager:
                 
                 package_name = config.get('package_name')
                 if package_name:
+                    if package_name in self.skip_packages:
+                        print(f"  Skipping (per --skip-package): {package_name}")
+                        continue
                     self.packages[package_name] = config
                     print(f"  Loaded: {package_name}")
                 else:
@@ -51,7 +56,25 @@ class RMFDependencyManager:
             except Exception as e:
                 print(f"  Error loading {yaml_file}: {e}")
         
-        print(f"Loaded {len(self.packages)} packages.")
+        print(f"Loaded {len(self.packages)} packages (after skips).")
+        
+    def _map_system_dep_to_internal(self, dep: str) -> Optional[str]:
+        """Map a system_dep string like 'ros-jazzy-rmf-utils' or 'ros2-jazzy-rmf-utils' back to an internal package name like 'rmf_utils'.
+        Returns None if not an internal package or mapping not possible.
+        """
+        prefixes = [f"ros-{self.distro}-", f"ros2-{self.distro}-"]
+        for prefix in prefixes:
+            if dep.startswith(prefix):
+                name_part = dep[len(prefix):]
+                # Accept both hyphens and underscores; normalize to underscores to match our YAML package names
+                internal = name_part.replace('-', '_')
+                # Some ROS RPMs may include additional suffixes (e.g., -devel). Drop common suffixes
+                for suffix in ("_devel", "-devel"):
+                    if internal.endswith(suffix):
+                        internal = internal[: -len(suffix)]
+                # Only treat as internal if we actually have this package loaded
+                return internal
+        return None
         
     def build_dependency_graph(self):
         """Build dependency graph from package configurations"""
@@ -61,17 +84,25 @@ class RMFDependencyManager:
         for pkg_name, config in self.packages.items():
             self.dependency_graph.add_node(pkg_name, **config)
         
-        # Add dependency edges
+        # Add dependency edges (include system_depends-derived internal deps)
         for pkg_name, config in self.packages.items():
-            build_deps = config.get('build_depends', [])
-            exec_deps = config.get('exec_depends', [])
+            build_deps = config.get('build_depends', []) or []
+            exec_deps = config.get('exec_depends', []) or []
+            system_deps = config.get('system_depends', []) or []
             
-            # Combine build and exec dependencies
-            all_deps = set(build_deps + exec_deps)
+            # Map system_depends to potential internal package names
+            mapped_internal_from_system = []
+            for dep in system_deps:
+                internal = self._map_system_dep_to_internal(dep)
+                if internal and internal in self.packages:
+                    mapped_internal_from_system.append(internal)
+            
+            # Combine all deps
+            all_deps = set(build_deps + exec_deps + mapped_internal_from_system)
             
             for dep in all_deps:
                 # Only add edges for RMF packages (ignore system/ROS packages)
-                if dep in self.packages:
+                if dep in self.packages and dep != pkg_name:
                     self.dependency_graph.add_edge(dep, pkg_name)
                     print(f"  {pkg_name} depends on {dep}")
         
@@ -106,33 +137,27 @@ class RMFDependencyManager:
             print(f"Error: Cannot determine build order - {e}")
             return []
     
-    def save_build_order(self, build_order, filename='cfg/build_order.json'):
-        """Save build order to JSON file"""
+    def save_build_order(self, build_order, filename='build-order.json'):
+        """Save a simple dependency JSON with only:
+        - depends: {pkg: [internal_deps]}
+        """
+        # Build depends mapping (internal edges only)
+        depends: Dict[str, List[str]] = {}
+        for pkg in build_order:
+            if pkg in self.dependency_graph:
+                deps = [u for u, v in self.dependency_graph.in_edges(pkg)]
+                depends[pkg] = sorted(deps)
+            else:
+                depends[pkg] = []
+
         build_data = {
-            'build_order': build_order,
-            'packages': {},
-            'dependency_info': {
-                'total_packages': len(build_order),
-                'has_cycles': False
-            }
+            'depends': depends,
         }
-        
-        # Add package information
-        for pkg_name in build_order:
-            if pkg_name in self.packages:
-                config = self.packages[pkg_name]
-                build_data['packages'][pkg_name] = {
-                    'build_priority': config.get('build_priority', 999),
-                    'build_depends': config.get('build_depends', []),
-                    'exec_depends': config.get('exec_depends', []),
-                    'enable_net': config.get('enable_net', False),
-                    'vendor_package': config.get('vendor_package', False)
-                }
-        
+
         # Ensure directory exists
         filepath = Path(filename)
         filepath.parent.mkdir(parents=True, exist_ok=True)
-        
+
         try:
             with open(filepath, 'w') as f:
                 json.dump(build_data, f, indent=2)
@@ -140,7 +165,7 @@ class RMFDependencyManager:
         except Exception as e:
             print(f"Error saving build order: {e}")
             return False
-        
+
         return True
     
     def load_build_order(self, filename='build_order.json'):
@@ -292,102 +317,41 @@ class RMFDependencyManager:
         print_tree(package_name)
 
 def main():
-    parser = argparse.ArgumentParser(description='RMF Dependency Manager')
-    parser.add_argument('--cfg-dir', default='cfg', help='Configuration directory')
-    parser.add_argument('--sources-dir', default='fedrmf/SOURCES', help='Sources directory')
+    parser = argparse.ArgumentParser(description='Generate build order (depends JSON) from <cfg-dir>/<distro> and save to <cfg-dir>/build-order.json')
+    parser.add_argument('--cfg-dir', default='cfg', help='Base configuration directory (e.g., cfg). Package YAMLs are read from <cfg-dir>/<distro>.')
     parser.add_argument('--build-dir', default='fedrmf', help='Build directory')
-    
-    subparsers = parser.add_subparsers(dest='command', help='Available commands')
-    
-    # Build order command
-    build_parser = subparsers.add_parser('build-order', help='Generate build order')
-    build_parser.add_argument('--save', action='store_true', help='Save build order to file')
-    
-    # Download command
-    download_parser = subparsers.add_parser('download', help='Download source tarballs')
-    download_parser.add_argument('--package', help='Download specific package')
-    download_parser.add_argument('--all', action='store_true', help='Download all packages')
-    download_parser.add_argument('--force', action='store_true', help='Force re-download')
-    download_parser.add_argument('--build-order', action='store_true', help='Use build order for downloads')
-    
-    # Info command
-    info_parser = subparsers.add_parser('info', help='Show package information')
-    info_parser.add_argument('package', help='Package name')
-    
-    # Tree command
-    tree_parser = subparsers.add_parser('tree', help='Show dependency tree')
-    tree_parser.add_argument('package', help='Package name')
-    tree_parser.add_argument('--depth', type=int, default=3, help='Maximum depth')
-    
-    # List command
-    list_parser = subparsers.add_parser('list', help='List packages')
-    list_parser.add_argument('--with-deps', action='store_true', help='Show dependencies')
-    
+    parser.add_argument('--distro', default='jazzy', help='ROS distro name (e.g., jazzy)')
+    parser.add_argument('--skip-package', action='append', default=[], help='Package to skip (can be specified multiple times)')
+    parser.add_argument('--output', default=None, help='Path to write build order JSON (default: <cfg>/build-order.json)')
+
     args = parser.parse_args()
-    
-    if not args.command:
-        parser.print_help()
-        return
-    
+
+    # Resolve cfg directory: prefer <cfg-dir>/<distro> if it exists, otherwise use cfg-dir as-is
+    requested_cfg = Path(args.cfg_dir)
+    candidate_cfg = requested_cfg / args.distro
+    resolved_cfg_dir = str(candidate_cfg if candidate_cfg.exists() else requested_cfg)
+
     manager = RMFDependencyManager(
-        cfg_dir=args.cfg_dir,
-        sources_dir=args.sources_dir,
-        build_dir=args.build_dir
+        cfg_dir=resolved_cfg_dir,
+        build_dir=args.build_dir,
+        distro=args.distro,
+        skip_packages=set(args.skip_package or [])
     )
-    
+
     manager.load_package_configs()
     manager.build_dependency_graph()
-    
-    if args.command == 'build-order':
-        if not manager.check_circular_dependencies():
-            sys.exit(1)
-        
-        build_order = manager.get_build_order()
-        if not build_order:
-            sys.exit(1)
-        
-        if args.save:
-            manager.save_build_order(build_order)
-    
-    elif args.command == 'download':
-        if args.package:
-            success = manager.download_source(args.package, force=args.force)
-            sys.exit(0 if success else 1)
-        elif args.all or args.build_order:
-            build_order = None
-            if args.build_order:
-                if not manager.check_circular_dependencies():
-                    sys.exit(1)
-                build_order = manager.get_build_order()
-                if not build_order:
-                    sys.exit(1)
-            
-            success = manager.download_all_sources(build_order, force=args.force)
-            sys.exit(0 if success else 1)
-        else:
-            print("Error: Must specify --package, --all, or --build-order")
-            sys.exit(1)
-    
-    elif args.command == 'info':
-        manager.show_package_info(args.package)
-    
-    elif args.command == 'tree':
-        manager.show_dependency_tree(args.package, max_depth=args.depth)
-    
-    elif args.command == 'list':
-        packages = sorted(manager.packages.keys())
-        print(f"Available packages ({len(packages)}):")
-        for pkg in packages:
-            if args.with_deps:
-                config = manager.packages[pkg]
-                deps = config.get('build_depends', []) + config.get('exec_depends', [])
-                rmf_deps = [dep for dep in deps if dep in manager.packages]
-                if rmf_deps:
-                    print(f"  {pkg} -> {', '.join(rmf_deps)}")
-                else:
-                    print(f"  {pkg}")
-            else:
-                print(f"  {pkg}")
+
+    if not manager.check_circular_dependencies():
+        sys.exit(1)
+
+    build_order = manager.get_build_order()
+    if not build_order:
+        sys.exit(1)
+
+    # Default output to <cfg-dir>/build-order.json if --output not provided
+    output_path = args.output if args.output else str(Path(args.cfg_dir) / 'build-order.json')
+    ok = manager.save_build_order(build_order, filename=output_path)
+    sys.exit(0 if ok else 1)
 
 if __name__ == '__main__':
     main() 

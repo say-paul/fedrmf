@@ -1,0 +1,40 @@
+{
+  "depends": {
+    "rmf_utils": [],
+    "pybind11_json_vendor": [],
+    "menge_vendor": [],
+    "ament_cmake_catch2": [],
+    "rmf_building_map_msgs": [],
+    "rmf_api_msgs": [],
+    "rmf_internal_msgs": [],
+    "rmf_visualization_msgs": [],
+    "nlohmann_json_schema_validator_vendor": [],
+    "rmf_traffic": [
+      "rmf_utils"
+    ],
+    "rmf_traffic_editor": [
+      "rmf_building_map_msgs"
+    ],
+    "rmf_battery": [
+      "rmf_traffic"
+    ],
+    "rmf_task": [
+      "nlohmann_json_schema_validator_vendor",
+      "rmf_api_msgs",
+      "rmf_battery",
+      "rmf_traffic",
+      "rmf_utils"
+    ],
+    "rmf_ros2": [
+      "nlohmann_json_schema_validator_vendor",
+      "pybind11_json_vendor",
+      "rmf_api_msgs",
+      "rmf_battery",
+      "rmf_building_map_msgs",
+      "rmf_internal_msgs",
+      "rmf_task",
+      "rmf_traffic",
+      "rmf_utils"
+    ]
+  }
+}
